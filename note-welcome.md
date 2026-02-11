@@ -73,3 +73,6 @@ And an ordered list:
 Here's a test image:
 
 ![[test.jpg]]
+
+### PNG Image
+![[logo.png]]
