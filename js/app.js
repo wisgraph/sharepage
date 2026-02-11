@@ -1,4 +1,5 @@
 import { navigate } from './router.js';
+import { initTOCToggle } from './toc.js';
 
 function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'light';
@@ -52,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initTheme();
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+  initTOCToggle();
 
   handleHashChange();
 });

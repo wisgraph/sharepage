@@ -1,6 +1,7 @@
 import { fetchFile, convertImageLinks, convertInternalLinks, routes } from './utils.js';
 import { applySyntaxHighlighting, renderMermaidDiagrams, renderMath } from './renderer.js';
 import { loadDashboardNotes, renderDashboardPage } from './dashboard.js';
+import { addHeadingIds, renderTOC, initScrollHighlight } from './toc.js';
 
 function removeFrontmatter(markdown) {
   return markdown.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
@@ -39,6 +40,7 @@ export async function navigate(hash) {
         console.log('[Render] Parsing markdown with marked.js');
         let html = marked.parse(content);
 
+        html = addHeadingIds(html);
         html = applySyntaxHighlighting(html);
         html = renderMermaidDiagrams(html);
         html = renderMath(html);
@@ -49,6 +51,9 @@ export async function navigate(hash) {
         await mermaid.run({
           nodes: document.querySelectorAll('.mermaid')
         });
+
+        renderTOC();
+        initScrollHighlight();
 
         console.log('[Router] Content rendered');
       } catch (error) {

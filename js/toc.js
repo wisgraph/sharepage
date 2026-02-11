@@ -1,0 +1,152 @@
+console.log('[TOC] Module loaded');
+
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function addHeadingIds(html) {
+  console.log('[TOC] Adding heading IDs and anchors');
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  const headings = doc.querySelectorAll('h1, h2, h3, h4');
+  console.log('[TOC] Found headings:', headings.length);
+
+  headings.forEach((heading) => {
+    const level = parseInt(heading.tagName[1]);
+    const text = heading.textContent;
+    const id = slugify(text);
+
+    heading.id = id;
+    console.log('[TOC] Added ID:', id, '(h' + level + ')');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'markdown-heading-wrapper';
+    const anchor = document.createElement('a');
+    anchor.href = '#' + id;
+    anchor.className = 'heading-anchor';
+    anchor.innerHTML = '#';
+    wrapper.appendChild(anchor);
+
+    heading.parentNode.insertBefore(wrapper, heading);
+    wrapper.appendChild(heading);
+  });
+
+  return doc.body.innerHTML;
+}
+
+export function extractTOC() {
+  const tocItems = [];
+  const headings = document.querySelectorAll('.document-container h1, h2, h3, h4');
+
+  console.log('[TOC] Extracting TOC from DOM, found:', headings.length);
+
+  headings.forEach((heading) => {
+    const level = parseInt(heading.tagName[1]);
+    const text = heading.textContent;
+    const id = heading.id;
+
+    tocItems.push({ level, text, id });
+  });
+
+  return tocItems;
+}
+
+export function renderTOC() {
+  const tocContainer = document.getElementById('toc-content');
+  const tocSidebar = document.getElementById('toc-sidebar');
+  if (!tocContainer || !tocSidebar) {
+    console.log('[TOC] TOC container or sidebar not found');
+    return;
+  }
+
+  console.log('[TOC] Rendering TOC');
+  const items = extractTOC();
+
+  if (items.length === 0) {
+    console.log('[TOC] No headings found, hiding sidebar');
+    tocSidebar.classList.add('hidden');
+    tocContainer.innerHTML = '';
+    return;
+  }
+
+  tocSidebar.classList.remove('hidden');
+  
+  let html = '<div class="toc-title">Table of Contents</div>';
+  html += '<ul class="toc-list">';
+
+  items.forEach((item) => {
+    html += `
+      <li class="toc-item">
+        <a href="#${item.id}" class="toc-link level-${item.level}" data-target="${item.id}">
+          ${item.text}
+        </a>
+      </li>
+    `;
+  });
+
+  html += '</ul>';
+  tocContainer.innerHTML = html;
+
+  tocContainer.querySelectorAll('.toc-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        const yOffset = -80;
+        const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+        
+        if (window.innerWidth <= 768) {
+          tocSidebar.classList.remove('open');
+        }
+      }
+    });
+  });
+
+  console.log('[TOC] TOC rendered with', items.length, 'items');
+}
+
+export function initScrollHighlight() {
+  console.log('[TOC] Initializing scroll highlight');
+
+  const observerOptions = {
+    rootMargin: '-100px 0px -80% 0px',
+    threshold: 0
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        document.querySelectorAll('.toc-link').forEach(link => {
+          link.classList.remove('active');
+          if (link.dataset.target === id) {
+            link.classList.add('active');
+            link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        });
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.document-container h1, h2, h3, h4').forEach(heading => {
+    observer.observe(heading);
+  });
+}
+
+export function initTOCToggle() {
+  const toggle = document.getElementById('toc-toggle');
+  const sidebar = document.getElementById('toc-sidebar');
+  
+  if (toggle && sidebar) {
+    toggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+  }
+}
