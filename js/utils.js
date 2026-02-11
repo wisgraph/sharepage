@@ -47,7 +47,7 @@ export async function fetchFile(filename) {
   }
 }
 
-export function convertInternalLinks(html) {
+export function transformInternalLinks(html) {
   return html.replace(
     /\[\[(.*?)\]\]/g,
     (match, filename) => {
@@ -57,8 +57,8 @@ export function convertInternalLinks(html) {
   );
 }
 
-export function convertImageLinks(markdown) {
-  console.log('[Render] Converting image links');
+export function transformObsidianImageLinks(markdown) {
+  console.log('[Render] Converting Obsidian image links');
 
   return markdown.replace(
     /!\[\[(.*?)\]\]/g,

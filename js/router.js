@@ -1,4 +1,4 @@
-import { fetchFile, convertImageLinks, convertInternalLinks, routes } from './utils.js';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, routes } from './utils.js';
 import { applySyntaxHighlighting, renderMermaidDiagrams, renderMath } from './renderer.js';
 import { loadDashboardNotes, renderDashboardPage } from './dashboard.js';
 import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js';
@@ -45,7 +45,7 @@ export async function navigate(hash) {
         content = removeFrontmatter(content);
         console.log('[Render] Markdown after removing frontmatter length:', content.length);
 
-        content = convertImageLinks(content);
+        content = transformObsidianImageLinks(content);
         console.log('[Render] Markdown after image conversion length:', content.length);
 
         console.log('[Render] Parsing markdown with marked.js');
@@ -55,7 +55,7 @@ export async function navigate(hash) {
         html = applySyntaxHighlighting(html);
         html = renderMermaidDiagrams(html);
         html = renderMath(html);
-        html = convertInternalLinks(html);
+        html = transformInternalLinks(html);
 
         document.getElementById('app').innerHTML = `<div class="document-container markdown">${html}</div>`;
 

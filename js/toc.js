@@ -84,8 +84,8 @@ export function renderTOC() {
   const tocSidebar = document.getElementById('toc-sidebar');
 
   if (!tocContainer || !tocSidebar) {
-    console.log('[TOC] TOC container or sidebar not found');
-    return;
+    console.warn('[TOC] TOC container or sidebar not found');
+    return { success: false, reason: 'Elements not found' };
   }
 
   console.log('[TOC] Rendering TOC');
@@ -95,21 +95,26 @@ export function renderTOC() {
     console.log('[TOC] No headings found, hiding sidebar');
     tocSidebar.classList.remove('visible');
     tocContainer.innerHTML = '';
-    return;
+    return { success: true, itemsCount: 0 };
   }
 
   tocSidebar.classList.add('visible');
   tocContainer.innerHTML = generateTOCHTML(items);
 
-  bindTOCClickEvents();
+  const bindResult = bindTOCClickEvents();
   console.log('[TOC] TOC rendered with', items.length, 'items');
+
+  return { success: bindResult.success, itemsCount: items.length };
 }
 
 function bindTOCClickEvents() {
   const tocContainer = document.getElementById('toc-content');
   const tocSidebar = document.getElementById('toc-sidebar');
 
-  if (!tocContainer) return;
+  if (!tocContainer) {
+    console.warn('[TOC] TOC container not found for event binding');
+    return { success: false, reason: 'Container not found' };
+  }
 
   tocContainer.querySelectorAll('.toc-link').forEach(link => {
     link.addEventListener('click', (e) => {
@@ -127,9 +132,13 @@ function bindTOCClickEvents() {
       }
     });
   });
+
+  return { success: true };
 }
 
-let currentScrollObserver = null;
+const tocState = {
+  currentScrollObserver: null
+};
 
 function highlightActiveTOCItem(id) {
   document.querySelectorAll('.toc-link').forEach(link => {
@@ -173,9 +182,9 @@ function createScrollObserver() {
 }
 
 export function stopScrollHighlight() {
-  if (currentScrollObserver) {
-    currentScrollObserver.disconnect();
-    currentScrollObserver = null;
+  if (tocState.currentScrollObserver) {
+    tocState.currentScrollObserver.disconnect();
+    Object.assign(tocState, { currentScrollObserver: null });
     console.log('[TOC] Stopped scroll observer');
   }
 }
@@ -183,16 +192,22 @@ export function stopScrollHighlight() {
 export function initScrollHighlight() {
   console.log('[TOC] Initializing scroll highlight');
   stopScrollHighlight();
-  currentScrollObserver = createScrollObserver();
+  const observer = createScrollObserver();
+  Object.assign(tocState, { currentScrollObserver: observer });
 }
 
 export function initTOCToggle() {
   const toggle = document.getElementById('toc-toggle');
   const sidebar = document.getElementById('toc-sidebar');
 
-  if (toggle && sidebar) {
-    toggle.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
-    });
+  if (!toggle || !sidebar) {
+    console.warn('[TOC] Toggle button or sidebar not found');
+    return { success: false, reason: 'Elements not found' };
   }
+
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+  });
+
+  return { success: true };
 }
