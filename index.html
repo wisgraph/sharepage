@@ -265,23 +265,24 @@
       );
     }
 
-    function convertImageLinks(html) {
-      console.log('[Render] Converting image links');
-      console.log('[Render] HTML before conversion:', html.substring(0, 500) + '...');
+    function convertImageLinks(markdown) {
+      console.log('[Render] Converting image links in markdown');
+      console.log('[Render] Markdown before conversion:', markdown.substring(0, 500) + '...');
       
-      const matches = html.match(/!\[\[(.*?)\]\]/g);
+      const matches = markdown.match(/!\[\[(.*?)\]\]/g);
       console.log('[Render] Image links found:', matches);
       
-      const result = html.replace(
+      const result = markdown.replace(
         /!\[\[(.*?)\]\]/g,
         (match, filename) => {
           const url = getRawUrl('_image_' + filename);
           console.log('[Render] Image link:', filename, '→', url);
-          return `![${filename}](${url})`;
+          return `
+![${filename}](${url})`;
         }
       );
       
-      console.log('[Render] HTML after conversion:', result.substring(0, 500) + '...');
+      console.log('[Render] Markdown after conversion:', result.substring(0, 500) + '...');
       return result;
     }
 
@@ -295,18 +296,21 @@
         console.log('[Router] Navigating to:', hash);
 
         try {
-          const content = await fetchFile(route.file);
-          console.log('[Render] Parsing markdown with marked.js');
+          let content = await fetchFile(route.file);
+          console.log('[Render] Original markdown length:', content.length);
+          console.log('[Render] Converting Obsidian image links first');
           
-          let html = marked.parse(content);
+          // Convert ![[filename]] to ![filename](url) before marked.js parsing
+          content = convertImageLinks(content);
+          console.log('[Render] Markdown after image conversion length:', content.length);
+          
+          console.log('[Render] Parsing markdown with marked.js');
+          const html = marked.parse(content);
           
           console.log('[Render] Converting internal links');
-          html = convertInternalLinks(html);
+          const finalHtml = convertInternalLinks(html);
           
-          console.log('[Render] Converting image links');
-          html = convertImageLinks(html);
-          
-          document.getElementById('app').innerHTML = '<div class="markdown">' + html + '</div>';
+          document.getElementById('app').innerHTML = '<div class="markdown">' + finalHtml + '</div>';
           console.log('[Router] Content rendered');
         } catch (error) {
           console.error('[Router] Error:', error);
