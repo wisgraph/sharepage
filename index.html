@@ -24,7 +24,7 @@
       width: 250px;
       height: 100vh;
       background-color: white;
-      border-right: 1px solid #e5e7eb;
+      border-right:1px solid #e5e7eb;
       padding: 20px;
       overflow-y: auto;
     }
@@ -87,6 +87,13 @@
       margin-top: 20px;
     }
 
+    .content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      margin-top: 15px;
+    }
+
     .content p {
       margin-bottom: 10px;
       line-height: 1.6;
@@ -99,6 +106,46 @@
 
     .content li {
       margin-bottom: 5px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #6b7280;
+    }
+
+    .error {
+      text-align: center;
+      padding: 40px;
+      color: #dc2626;
+    }
+
+    .markdown a {
+      color: #0284c7;
+      text-decoration: underline;
+    }
+
+    .markdown code {
+      background-color: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+
+    .markdown pre {
+      background-color: #1f2937;
+      color: #f9fafb;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    .markdown pre code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
     }
   </style>
 </head>
@@ -119,56 +166,113 @@
   </div>
 
   <script>
+    const github = {
+      owner: 'wis-graph',
+      repo: 'sharepage',
+      branch: 'gh-pages'
+    };
+
     const routes = {
       '/': {
         title: 'Home',
-        content: `
-          <h1>Welcome to ShareHub</h1>
-          <p>This is a hash-based routing test.</p>
-          <h2>Available Routes</h2>
-          <ul>
-            <li><a href="#/">Home</a> - This page</li>
-            <li><a href="#/note-welcome.md">Welcome</a> - Welcome note</li>
-            <li><a href="#/note-todo.md">Todo</a> - Todo list</li>
-          </ul>
-          <p>Try clicking the links in the sidebar to navigate!</p>
-        `
+        file: '_home.md'
       },
       '/note-welcome.md': {
         title: 'Welcome',
-        content: `
-          <h1>Welcome Note</h1>
-          <p>This is the welcome note.</p>
-          <p>Soon this will be loaded dynamically from GitHub.</p>
-        `
+        file: 'note-welcome.md'
       },
       '/note-todo.md': {
         title: 'Todo',
-        content: `
-          <h1>Todo List</h1>
-          <ul>
-            <li>Task 1</li>
-            <li>Task 2</li>
-            <li>Task 3</li>
-          </ul>
-          <p>Soon this will be loaded dynamically from GitHub.</p>
-        `
+        file: 'note-todo.md'
       }
     };
 
-    function navigate(hash) {
+    function getRawUrl(filename) {
+      return `https://raw.githubusercontent.com/${github.owner}/${github.repo}/${github.branch}/${filename}`;
+    }
+
+    async function fetchFile(filename) {
+      console.log('[Fetch] Fetching:', filename);
+      const url = getRawUrl(filename);
+      console.log('[Fetch] URL:', url);
+
+      try {
+        const response = await fetch(url);
+        console.log('[Fetch] Response status:', response.status);
+        console.log('[Fetch] Response type:', response.headers.get('content-type'));
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const text = await response.text();
+        console.log('[Fetch] Content length:', text.length);
+        return text;
+      } catch (error) {
+        console.error('[Fetch] Error:', error);
+        throw error;
+      }
+    }
+
+    function renderMarkdown(content) {
+      console.log('[Render] Rendering markdown');
+      
+      // Simple markdown to HTML conversion
+      let html = content
+        // Headers
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        // Bold and Italic
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // Links
+        .replace(/\[\[(.*?)\]\]/g, '<a href="#/$1.md">$1</a>')
+        // Code blocks
+        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+        // Inline code
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        // Lists
+        .replace(/^- (.*$)/gim, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+        // Paragraphs
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/^(.*)$/gim, '<p>$1</p>')
+        // Clean up
+        .replace(/<p><\/p>/g, '')
+        .replace(/<p>(<h[1-6]>)/g, '$1')
+        .replace(/(<\/h[1-6]>)<\/p>/g, '$1')
+        .replace(/<p>(<ul>)/g, '$1')
+        .replace(/(<\/ul>)<\/p>/g, '$1')
+        .replace(/<p>(<pre>)/g, '$1')
+        .replace(/(<\/pre>)<\/p>/g, '$1');
+
+      return html;
+    }
+
+    async function navigate(hash) {
       const route = routes[hash];
       
       if (route) {
-        document.getElementById('app').innerHTML = route.content;
+        document.getElementById('app').innerHTML = '<div class="loading">Loading...</div>';
         document.title = route.title + ' - ShareHub';
+        
+        console.log('[Router] Navigating to:', hash);
+
+        try {
+          const content = await fetchFile(route.file);
+          const html = renderMarkdown(content);
+          document.getElementById('app').innerHTML = '<div class="markdown">' + html + '</div>';
+          console.log('[Router] Content rendered');
+        } catch (error) {
+          console.error('[Router] Error:', error);
+          document.getElementById('app').innerHTML = '<div class="error">Error: ' + error.message + '</div>';
+        }
         
         // Update sidebar active state
         document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
         const navLink = document.querySelector('.sidebar a[href="#' + hash + '"]');
         if (navLink) navLink.classList.add('active');
-        
-        console.log('[Router] Navigated to:', hash);
       } else {
         console.log('[Router] Route not found:', hash);
         document.getElementById('app').innerHTML = '<h1>404 Not Found</h1><p>The route "' + hash + '" does not exist.</p>';
@@ -177,6 +281,7 @@
 
     function handleHashChange() {
       const hash = window.location.hash.slice(1) || '/';
+      console.log('[Router] Hash changed:', hash);
       navigate(hash);
     }
 
@@ -184,7 +289,9 @@
     window.addEventListener('hashchange', handleHashChange);
 
     // Handle initial load
+    console.log('[App] Initializing...');
     handleHashChange();
   </script>
 </body>
 </html>
+
