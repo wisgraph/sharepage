@@ -259,7 +259,10 @@
     function convertInternalLinks(html) {
       return html.replace(
         /\[\[(.*?)\]\]/g,
-        '<a href="#/$1.md" class="internal-link">$1</a>'
+        (match, filename) => {
+          const path = filename.endsWith('.md') ? filename : filename + '.md';
+          return `<a href="#/${path}" class="internal-link">${filename}</a>`;
+        }
       );
     }
 

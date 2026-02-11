@@ -67,3 +67,9 @@ And an ordered list:
 | Images | ✅ |
 | Code highlighting | ✅ |
 | MOC support | ✅ |
+
+## Image Test
+
+Here's a test image:
+
+![[test.jpg]]
