@@ -2,6 +2,10 @@ import { fetchFile, convertImageLinks, convertInternalLinks, routes } from './ut
 import { applySyntaxHighlighting, renderMermaidDiagrams, renderMath } from './renderer.js';
 import { loadDashboardNotes, renderDashboardPage } from './dashboard.js';
 
+function removeFrontmatter(markdown) {
+  return markdown.replace(/^---\n[\s\S]*?\n---\n/, '');
+}
+
 export async function navigate(hash) {
   if (hash === '/') {
     document.getElementById('app').innerHTML = '<div class="loading">Loading dashboard...</div>';
@@ -25,6 +29,9 @@ export async function navigate(hash) {
       try {
         let content = await fetchFile(route.file);
         console.log('[Render] Original markdown length:', content.length);
+
+        content = removeFrontmatter(content);
+        console.log('[Render] Markdown after removing frontmatter length:', content.length);
 
         content = convertImageLinks(content);
         console.log('[Render] Markdown after image conversion length:', content.length);
