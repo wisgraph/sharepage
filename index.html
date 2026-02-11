@@ -202,8 +202,8 @@
      <h2>ShareHub</h2>
      <ul>
        <li><a href="#/" id="nav-home" class="active">Home</a></li>
-       <li><a href="#/note-welcome" id="nav-welcome">Welcome</a></li>
-       <li><a href="#/note-todo" id="nav-todo">Todo</a></li>
+       <li><a href="#/note-welcome.md" id="nav-welcome">Welcome</a></li>
+       <li><a href="#/note-todo.md" id="nav-todo">Todo</a></li>
      </ul>
    </div>
 
@@ -225,11 +225,11 @@
         title: 'Home',
         file: '_home.md'
       },
-      '/note-welcome': {
+      '/note-welcome.md': {
         title: 'Welcome',
         file: 'note-welcome.md'
       },
-      '/note-todo': {
+      '/note-todo.md': {
         title: 'Todo',
         file: 'note-todo.md'
       }
@@ -266,7 +266,7 @@
       return html.replace(
         /\[\[(.*?)\]\]/g,
         (match, filename) => {
-          return `<a href="#/${filename}" class="internal-link">${filename}</a>`;
+          return `<a href="#/${filename}.md" class="internal-link">${filename}</a>`;
         }
       );
     }
