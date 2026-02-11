@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ShareHub</title>
   <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/highlight.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -144,19 +146,23 @@
     }
 
     .markdown pre {
-      background-color: #1f2937;
-      color: #f9fafb;
+      background-color: #0d1117;
       padding: 16px;
       border-radius: 6px;
       overflow-x: auto;
       margin: 16px 0;
+      border: 1px solid #30363d;
     }
 
     .markdown pre code {
       background-color: transparent;
       padding: 0;
-      color: inherit;
       font-size: 0.9em;
+      line-height: 1.5;
+    }
+
+    .markdown .hljs {
+      background-color: transparent !important;
     }
 
     .markdown blockquote {
@@ -265,6 +271,33 @@
       );
     }
 
+    function applySyntaxHighlighting(html) {
+      console.log('[Highlight] Applying syntax highlighting');
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      const codeBlocks = doc.querySelectorAll('pre code');
+      console.log('[Highlight] Found', codeBlocks.length, 'code blocks');
+
+      codeBlocks.forEach((block) => {
+        const code = block.textContent;
+        const language = block.className.match(/language-(\w+)/)?.[1];
+
+        if (language && hljs.getLanguage(language)) {
+          const result = hljs.highlight(code, { language: language, ignoreIllegals: true });
+          block.innerHTML = result.value;
+          block.className = `hljs language-${language}`;
+        } else {
+          const result = hljs.highlightAuto(code);
+          block.innerHTML = result.value;
+          block.className = 'hljs';
+        }
+      });
+
+      console.log('[Highlight] Syntax highlighting applied');
+      return doc.body.innerHTML;
+    }
+
     function convertImageLinks(markdown) {
       console.log('[Render] Converting image links in markdown');
       console.log('[Render] Markdown before conversion:', markdown.substring(0, 500) + '...');
@@ -306,9 +339,12 @@
           
           console.log('[Render] Parsing markdown with marked.js');
           const html = marked.parse(content);
-          
+
+          console.log('[Render] Applying syntax highlighting');
+          const highlightedHtml = applySyntaxHighlighting(html);
+
           console.log('[Render] Converting internal links');
-          const finalHtml = convertInternalLinks(html);
+          const finalHtml = convertInternalLinks(highlightedHtml);
           
           document.getElementById('app').innerHTML = '<div class="markdown">' + finalHtml + '</div>';
           console.log('[Router] Content rendered');
@@ -339,6 +375,7 @@
     // Handle initial load
     console.log('[App] Initializing...');
     console.log('[App] marked.js loaded:', typeof marked !== 'undefined');
+    console.log('[App] highlight.js loaded:', typeof hljs !== 'undefined');
     handleHashChange();
   </script>
 </body>
