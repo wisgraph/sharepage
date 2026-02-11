@@ -1,7 +1,7 @@
 import { fetchFile, convertImageLinks, convertInternalLinks, routes } from './utils.js';
 import { applySyntaxHighlighting, renderMermaidDiagrams, renderMath } from './renderer.js';
 import { loadDashboardNotes, renderDashboardPage } from './dashboard.js';
-import { addHeadingIds, renderTOC, initScrollHighlight } from './toc.js';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js';
 
 function removeFrontmatter(markdown) {
   return markdown.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
@@ -9,6 +9,17 @@ function removeFrontmatter(markdown) {
 
 export async function navigate(hash) {
   if (hash === '/') {
+    stopScrollHighlight();
+
+    const tocSidebar = document.getElementById('toc-sidebar');
+    const tocContainer = document.getElementById('toc-content');
+    if (tocSidebar) {
+      tocSidebar.classList.remove('visible');
+    }
+    if (tocContainer) {
+      tocContainer.innerHTML = '';
+    }
+
     document.getElementById('app').innerHTML = '<div class="loading">Loading dashboard...</div>';
     document.title = 'Dashboard - ShareHub';
 

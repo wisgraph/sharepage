@@ -40,7 +40,7 @@ export function addHeadingIds(html) {
   return doc.body.innerHTML;
 }
 
-export function extractTOC() {
+function extractTOC() {
   const tocItems = [];
   const headings = document.querySelectorAll('.document-container h1, h2, h3, h4');
 
@@ -57,26 +57,11 @@ export function extractTOC() {
   return tocItems;
 }
 
-export function renderTOC() {
-  const tocContainer = document.getElementById('toc-content');
-  const tocSidebar = document.getElementById('toc-sidebar');
-  if (!tocContainer || !tocSidebar) {
-    console.log('[TOC] TOC container or sidebar not found');
-    return;
-  }
-
-  console.log('[TOC] Rendering TOC');
-  const items = extractTOC();
-
+function generateTOCHTML(items) {
   if (items.length === 0) {
-    console.log('[TOC] No headings found, hiding sidebar');
-    tocSidebar.classList.add('hidden');
-    tocContainer.innerHTML = '';
-    return;
+    return '<p class="toc-empty">No headings found</p>';
   }
 
-  tocSidebar.classList.remove('hidden');
-  
   let html = '<div class="toc-title">Table of Contents</div>';
   html += '<ul class="toc-list">';
 
@@ -91,29 +76,80 @@ export function renderTOC() {
   });
 
   html += '</ul>';
-  tocContainer.innerHTML = html;
+  return html;
+}
+
+export function renderTOC() {
+  const tocContainer = document.getElementById('toc-content');
+  const tocSidebar = document.getElementById('toc-sidebar');
+
+  if (!tocContainer || !tocSidebar) {
+    console.log('[TOC] TOC container or sidebar not found');
+    return;
+  }
+
+  console.log('[TOC] Rendering TOC');
+  const items = extractTOC();
+
+  if (items.length === 0) {
+    console.log('[TOC] No headings found, hiding sidebar');
+    tocSidebar.classList.remove('visible');
+    tocContainer.innerHTML = '';
+    return;
+  }
+
+  tocSidebar.classList.add('visible');
+  tocContainer.innerHTML = generateTOCHTML(items);
+
+  bindTOCClickEvents();
+  console.log('[TOC] TOC rendered with', items.length, 'items');
+}
+
+function bindTOCClickEvents() {
+  const tocContainer = document.getElementById('toc-content');
+  const tocSidebar = document.getElementById('toc-sidebar');
+
+  if (!tocContainer) return;
 
   tocContainer.querySelectorAll('.toc-link').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
       const target = document.querySelector(link.getAttribute('href'));
+
       if (target) {
         const yOffset = -80;
         const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
         window.scrollTo({ top: y, behavior: 'smooth' });
-        
-        if (window.innerWidth <= 768) {
+
+        if (window.innerWidth <= 768 && tocSidebar) {
           tocSidebar.classList.remove('open');
         }
       }
     });
   });
-
-  console.log('[TOC] TOC rendered with', items.length, 'items');
 }
 
-export function initScrollHighlight() {
-  console.log('[TOC] Initializing scroll highlight');
+let currentScrollObserver = null;
+
+function highlightActiveTOCItem(id) {
+  document.querySelectorAll('.toc-link').forEach(link => {
+    link.classList.remove('active');
+    if (link.dataset.target === id) {
+      link.classList.add('active');
+      link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+}
+
+function createScrollObserver() {
+  const headings = document.querySelectorAll('.document-container h1, h2, h3, h4');
+
+  if (headings.length === 0) {
+    console.log('[TOC] No headings found, skipping scroll observer');
+    return null;
+  }
+
+  console.log('[TOC] Creating scroll observer for', headings.length, 'headings');
 
   const observerOptions = {
     rootMargin: '-100px 0px -80% 0px',
@@ -124,26 +160,36 @@ export function initScrollHighlight() {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const id = entry.target.id;
-        document.querySelectorAll('.toc-link').forEach(link => {
-          link.classList.remove('active');
-          if (link.dataset.target === id) {
-            link.classList.add('active');
-            link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-        });
+        highlightActiveTOCItem(id);
       }
     });
   }, observerOptions);
 
-  document.querySelectorAll('.document-container h1, h2, h3, h4').forEach(heading => {
+  headings.forEach(heading => {
     observer.observe(heading);
   });
+
+  return observer;
+}
+
+export function stopScrollHighlight() {
+  if (currentScrollObserver) {
+    currentScrollObserver.disconnect();
+    currentScrollObserver = null;
+    console.log('[TOC] Stopped scroll observer');
+  }
+}
+
+export function initScrollHighlight() {
+  console.log('[TOC] Initializing scroll highlight');
+  stopScrollHighlight();
+  currentScrollObserver = createScrollObserver();
 }
 
 export function initTOCToggle() {
   const toggle = document.getElementById('toc-toggle');
   const sidebar = document.getElementById('toc-sidebar');
-  
+
   if (toggle && sidebar) {
     toggle.addEventListener('click', () => {
       sidebar.classList.toggle('open');

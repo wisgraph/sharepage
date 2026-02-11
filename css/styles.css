@@ -594,11 +594,11 @@
       top: 100px;
       height: calc(100vh - 120px);
       overflow-y: auto;
-      display: block;
+      display: none;
     }
 
-    .toc-sidebar.hidden {
-      display: none;
+    .toc-sidebar.visible {
+      display: block;
     }
 
     .toc-toggle {
