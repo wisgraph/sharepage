@@ -198,14 +198,14 @@
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <h2>ShareHub</h2>
-    <ul>
-      <li><a href="#/" id="nav-home" class="active">Home</a></li>
-      <li><a href="#/note-welcome.md" id="nav-welcome">Welcome</a></li>
-      <li><a href="#/note-todo.md" id="nav-todo">Todo</a></li>
-    </ul>
-  </div>
+   <div class="sidebar">
+     <h2>ShareHub</h2>
+     <ul>
+       <li><a href="#/" id="nav-home" class="active">Home</a></li>
+       <li><a href="#/note-welcome" id="nav-welcome">Welcome</a></li>
+       <li><a href="#/note-todo" id="nav-todo">Todo</a></li>
+     </ul>
+   </div>
 
   <div class="main-content">
     <div class="content" id="app">
@@ -225,11 +225,11 @@
         title: 'Home',
         file: '_home.md'
       },
-      '/note-welcome.md': {
+      '/note-welcome': {
         title: 'Welcome',
         file: 'note-welcome.md'
       },
-      '/note-todo.md': {
+      '/note-todo': {
         title: 'Todo',
         file: 'note-todo.md'
       }
@@ -266,7 +266,7 @@
       return html.replace(
         /\[\[(.*?)\]\]/g,
         (match, filename) => {
-          return `<a href="#/${filename}.md" class="internal-link">${filename}</a>`;
+          return `<a href="#/${filename}" class="internal-link">${filename}</a>`;
         }
       );
     }
@@ -372,11 +372,20 @@
     // Listen for hash changes
     window.addEventListener('hashchange', handleHashChange);
 
-    // Handle initial load
-    console.log('[App] Initializing...');
-    console.log('[App] marked.js loaded:', typeof marked !== 'undefined');
-    console.log('[App] highlight.js loaded:', typeof hljs !== 'undefined');
-    handleHashChange();
+    // Handle initial load after DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[App] Initializing...');
+      console.log('[App] marked.js loaded:', typeof marked !== 'undefined');
+      console.log('[App] highlight.js loaded:', typeof hljs !== 'undefined');
+
+      if (typeof hljs === 'undefined') {
+        console.error('[App] Error: highlight.js is not loaded');
+        document.getElementById('app').innerHTML = '<div class="error">Error: highlight.js failed to load. Please refresh the page.</div>';
+        return;
+      }
+
+      handleHashChange();
+    });
   </script>
 </body>
 </html>
