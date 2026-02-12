@@ -24,7 +24,7 @@ export function extractDashboardLinks(dashboardContent) {
 
 function extractMetadata(markdown, filename) {
   const frontmatterMatch = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  let title = filename.replace(/\.md$/, '').replace(/^_/, '').replace(/^note-/, '');
+  let title = filename.replace(/\.md$/, '').replace(/^_/, '');
   let description = '';
   let thumbnail = null;
 
