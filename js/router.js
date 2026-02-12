@@ -1,10 +1,10 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter } from './utils.js?v=3100';
-import { createTagTicker } from './tag-ticker.js?v=3100';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=3100';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=3100';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=3100';
-import { initImageViewer } from './image-viewer.js?v=3100';
-import { initCodeUtils } from './code-utils.js?v=3100';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter } from './utils.js?v=3200';
+import { createTagTicker } from './tag-ticker.js?v=3200';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=3200';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=3200';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=3200';
+import { initImageViewer } from './image-viewer.js?v=3200';
+import { initCodeUtils } from './code-utils.js?v=3200';
 
 /**
  * Main navigation entry point
@@ -56,10 +56,11 @@ async function handleDocumentRoute(filename) {
     const rawContent = await fetchFile(filename);
 
     // Process content (Refactored pipeline)
-    const { html, tags, title } = await processDocument(filename, rawContent);
+    // Process content (Refactored pipeline)
+    const { html, tags, title, metadata } = await processDocument(filename, rawContent);
 
     // Render View
-    renderDocumentView(title, tags, html);
+    renderDocumentView(title, tags, html, metadata);
 
     // key post-render initializations
     initPostRenderScripts();
@@ -125,17 +126,67 @@ async function processDocument(filename, rawContent) {
   html = restoreMath(html);
   html = transformInternalLinks(html);
 
+  // Extract Metadata for Head Tags
+  let description = data.description || '';
+  if (!description) {
+    // Extract first paragraph as description form raw content, removing markdown syntax
+    const plainText = content.replace(/[#*`_\[\]]/g, '').trim();
+    description = plainText.substring(0, 150) + (plainText.length > 150 ? '...' : '');
+  }
+
+  let thumbnail = data.thumbnail ? getRawUrl('_image_' + data.thumbnail) : null;
+  if (!thumbnail) {
+    // Try to find first image or YouTube video
+    // Use rawContent to find syntax, but be careful of transformed links.
+    // Actually, 'content' variable has been transformed by normalizeMermaid, transformObsidianImage, transformYouTube.
+    // transformObsidianImageLinks converts ![[...]] to standard markdown images.
+    // transformYouTubeLinks converts markdown video links to iframes.
+
+    // So 'content' at this point might not have original ![[...]] or ![...](yt).
+    // Let's use 'rawContent' for metadata extraction to be safe, as it preserves original syntax.
+
+    const obsidianMatch = rawContent.match(/!\[\[([^\]]+)\]\]/);
+    let obsidianIndex = obsidianMatch ? obsidianMatch.index : Infinity;
+
+    const markdownMatch = rawContent.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+    let markdownIndex = markdownMatch ? markdownMatch.index : Infinity;
+
+    if (obsidianMatch || markdownMatch) {
+      if (obsidianIndex < markdownIndex) {
+        // Obsidian image found first
+        thumbnail = getRawUrl('_image_' + obsidianMatch[1]);
+      } else if (markdownMatch) {
+        // Markdown image found first
+        const url = markdownMatch[2];
+        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+        const ytMatch = url.match(youtubeRegex);
+
+        if (ytMatch && ytMatch[1]) {
+          thumbnail = `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+        } else {
+          thumbnail = url;
+        }
+      }
+    }
+  }
+
   return {
     html: html,
     tags: data.tags || [],
-    title: filename.replace(/\.md$/, '')
+    title: filename.replace(/\.md$/, ''),
+    metadata: {
+      title: data.title || filename.replace(/\.md$/, ''),
+      description: description,
+      thumbnail: thumbnail,
+      url: window.location.href
+    }
   };
 }
 
 /**
  * Updates the DOM with the processed document
  */
-function renderDocumentView(title, tags, html) {
+function renderDocumentView(title, tags, html, metadata) {
   const tickerHtml = createTagTicker(tags);
 
   document.getElementById('app').innerHTML = `
@@ -145,6 +196,36 @@ function renderDocumentView(title, tags, html) {
         ${html}
       </div>
     `;
+
+  // Update Head Tags
+  if (metadata) {
+    document.title = `${metadata.title} - ShareHub`;
+
+    // Helper to set meta tag
+    const setMeta = (name, content, property = false) => {
+      if (!content) return;
+
+      const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
+      let element = document.querySelector(selector);
+
+      if (!element) {
+        element = document.createElement('meta');
+        if (property) element.setAttribute('property', name);
+        else element.setAttribute('name', name);
+        document.head.appendChild(element);
+      }
+
+      element.setAttribute('content', content);
+    };
+
+    setMeta('description', metadata.description);
+    setMeta('og:title', metadata.title, true);
+    setMeta('og:description', metadata.description, true);
+    setMeta('og:url', metadata.url, true);
+    if (metadata.thumbnail) {
+      setMeta('og:image', metadata.thumbnail, true);
+    }
+  }
 }
 
 /**
@@ -176,14 +257,14 @@ async function initPostRenderScripts() {
  * Renders the error page
  */
 function renderError(resourceName, error) {
-  console.error(`[Router] Error loading ${resourceName}:`, error);
+  console.error(`[Router] Error loading ${resourceName}: `, error);
   document.getElementById('app').innerHTML = `
-    <div class="error-container">
+    < div class="error-container" >
       <h1>404 Not Found</h1>
       <p>The document "<strong>${resourceName}</strong>" could not be loaded.</p>
       <br/>
       <p class="error-detail">${error.message}</p>
       <a href="#/" class="back-button">Go to Dashboard</a>
-    </div>
-  `;
+    </div >
+    `;
 }

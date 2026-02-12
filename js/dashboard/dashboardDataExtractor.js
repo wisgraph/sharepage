@@ -69,12 +69,32 @@ function extractThumbnail(content, metadata) {
     return url;
   }
 
-  console.log('[Thumbnail] Searching for first image in content...');
-  const imageMatch = content.match(/!\[\[([^\]]+)\]\]/);
+  // 1. Search for Obsidian Image ![[...]]
+  const obsidianMatch = content.match(/!\[\[([^\]]+)\]\]/);
+  let obsidianIndex = obsidianMatch ? obsidianMatch.index : Infinity;
 
-  if (imageMatch) {
-    console.log('[Thumbnail] Found image:', imageMatch[1]);
-    return getRawUrl('_image_' + imageMatch[1]);
+  // 2. Search for Markdown Image ![...](...)
+  const markdownMatch = content.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+  let markdownIndex = markdownMatch ? markdownMatch.index : Infinity;
+
+  // Determine which comes first
+  if (obsidianIndex < markdownIndex) {
+    console.log('[Thumbnail] Found Obsidian image:', obsidianMatch[1]);
+    return getRawUrl('_image_' + obsidianMatch[1]);
+  } else if (markdownMatch) {
+    const url = markdownMatch[2];
+
+    // Check if it's a YouTube URL
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const ytMatch = url.match(youtubeRegex);
+
+    if (ytMatch && ytMatch[1]) {
+      console.log('[Thumbnail] Found YouTube video, extracting thumbnail:', ytMatch[1]);
+      return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+    }
+
+    console.log('[Thumbnail] Found Markdown image:', url);
+    return url;
   }
 
   console.log('[Thumbnail] No image found');
