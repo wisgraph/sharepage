@@ -12,7 +12,7 @@ tags:
   - "#Tech_Trends"
 ---
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/7Re9B_yDzI0?si=bCEk8CzcFVG_z4xM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+![](https://www.youtube.com/embed/7Re9B_yDzI0?si=bCEk8CzcFVG_z4xM)
 
 > [!ABSTRACT] 3줄 요약
 >

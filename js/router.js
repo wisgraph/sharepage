@@ -1,10 +1,10 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter } from './utils.js?v=2900';
-import { createTagTicker } from './tag-ticker.js?v=2900';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases } from './renderer.js?v=2900';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=2900';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=2900';
-import { initImageViewer } from './image-viewer.js?v=2900';
-import { initCodeUtils } from './code-utils.js?v=2900';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter } from './utils.js?v=3000';
+import { createTagTicker } from './tag-ticker.js?v=3000';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=3000';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=3000';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=3000';
+import { initImageViewer } from './image-viewer.js?v=3000';
+import { initCodeUtils } from './code-utils.js?v=3000';
 
 /**
  * Main navigation entry point
@@ -108,6 +108,9 @@ async function processDocument(filename, rawContent) {
 
   // 2. Transform Images
   content = transformObsidianImageLinks(content);
+
+  // 2.5. Transform YouTube Links
+  content = transformYouTubeLinks(content);
 
   // 3. Protect Math
   content = protectMath(content);

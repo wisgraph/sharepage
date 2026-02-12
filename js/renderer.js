@@ -138,6 +138,36 @@ export function renderMermaidDiagrams(html) {
   return doc.body.innerHTML;
 }
 
+export function transformYouTubeLinks(markdown) {
+  // Pattern: ![alt](url)
+  const imageLinkRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+
+  return markdown.replace(imageLinkRegex, (match, alt, url) => {
+    // Check if it's a YouTube URL
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const ytMatch = url.match(youtubeRegex);
+
+    if (ytMatch && ytMatch[1]) {
+      const videoId = ytMatch[1];
+      // Responsive container wrapper
+      return `
+<div class="video-container">
+  <iframe 
+    src="https://www.youtube.com/embed/${videoId}" 
+    title="${alt || 'YouTube video player'}" 
+    frameborder="0" 
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+    referrerpolicy="strict-origin-when-cross-origin" 
+    allowfullscreen>
+  </iframe>
+</div>`;
+    }
+
+    // Return original match if not a YouTube link
+    return match;
+  });
+}
+
 // Keep renderMath for legacy if needed, but we prefer protect/restore
 export function renderMath(html) {
   return restoreMath(html);
