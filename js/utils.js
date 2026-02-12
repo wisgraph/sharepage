@@ -11,12 +11,10 @@ export function getRawUrl(filename) {
 
   const encodedFilename = encodeURIComponent(targetFile);
 
-  // Determine if we are running locally
-  // For local development, we want simple relative paths.
-  // For GitHub Pages, we also want relative paths to support the repo subfolder.
-  // The simplest relative path usually works best.
-
-  return encodedFilename;
+  // Use a relative path with ./
+  // GitHub Pages needs this to resolve files relative to the current index.html location.
+  // This also works for local 'serve'.
+  return `./${encodedFilename}`;
 }
 
 export async function fetchFile(filename) {
