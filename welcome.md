@@ -7,7 +7,7 @@ tags: [welcome, guide, sharepage]
 
 # Welcome to **SharePage**!
 
-This is a sample note to demonstrate SharePage's markdown rendering capabilities.
+This is a sample note to demonstrate SharePage's markdown rendering capabilities. #test-tag #obsidian-share
 
 ## What is SharePage?
 

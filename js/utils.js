@@ -112,7 +112,7 @@ export function parseFrontmatter(markdown) {
         currentKey = key;
 
         if (key === 'tags') {
-          result.data[key] = []; // Initialize as array
+          result.data[key] = result.data[key] || []; // Initialize as array
 
           // Case 1: Inline list [tag1, tag2]
           if (value.startsWith('[') && value.endsWith(']')) {
@@ -124,7 +124,7 @@ export function parseFrontmatter(markdown) {
               }
               return tag.replace(/^#/, '');
             }).filter(t => t);
-            result.data[key] = tags;
+            result.data[key] = [...result.data[key], ...tags];
             currentKey = null; // Reset current key as we're done with tags
           }
           // Case 2: Inline comma-separated value
@@ -132,7 +132,7 @@ export function parseFrontmatter(markdown) {
             const tags = value.split(',').map(t => t.trim().replace(/^#/, '')).filter(t => t);
             // Only if there are actual values
             if (tags.length > 0) {
-              result.data[key] = tags;
+              result.data[key] = [...result.data[key], ...tags];
               currentKey = null;
             }
           }
@@ -148,6 +148,17 @@ export function parseFrontmatter(markdown) {
       }
     });
   }
+
+  // Extract inline tags from content: #tag but not # Heading
+  // Skip code blocks (```...```) to be more accurate
+  const contentForTags = result.content.replace(/```[\s\S]*?```/g, '');
+  const inlineTagsMatch = contentForTags.matchAll(/(?:^|\s)#([^\s!@#$%^&*(),.?":{}|<>]+)/g);
+  const inlineTags = Array.from(inlineTagsMatch).map(m => m[1]);
+
+  // Merge and deduplicate tags
+  const existingTags = result.data.tags || [];
+  const allTags = [...new Set([...existingTags, ...inlineTags])];
+  result.data.tags = allTags;
 
   return result;
 }

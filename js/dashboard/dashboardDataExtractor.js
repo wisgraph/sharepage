@@ -1,4 +1,4 @@
-import { fetchFile, getRawUrl, transformObsidianImageLinks, parseFrontmatter } from '../utils.js?v=4200';
+import { fetchFile, getRawUrl, transformObsidianImageLinks, parseFrontmatter } from '../utils.js?v=4300';
 
 /**
  * Extracts links grouped by sections based on ## Headings
@@ -77,7 +77,8 @@ function extractMetadata(markdown, filename) {
     title: title.charAt(0).toUpperCase() + title.slice(1),
     description: description || 'No description available.',
     filename: filename,
-    thumbnail: thumbnail
+    thumbnail: thumbnail,
+    tags: data.tags || []
   };
 }
 
@@ -104,7 +105,7 @@ function extractThumbnail(content, metadata) {
     const url = markdownMatch[2];
 
     // Check if it's a YouTube URL
-    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=4200)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=4300)|youtu\.be\/)([^"&?\/\s]{11})/;
     const ytMatch = url.match(youtubeRegex);
 
     if (ytMatch && ytMatch[1]) {
@@ -145,6 +146,7 @@ export async function extractNoteFromLink(link) {
       title: metadata.title,
       description: metadata.description,
       thumbnail: thumbnail,
+      tags: metadata.tags || [],
       path: '/' + note.file.replace(/\.md$/, '') // Ensure path is consistent with catch-all router
     };
 

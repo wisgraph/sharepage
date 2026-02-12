@@ -1,6 +1,6 @@
-import { navigate } from './router.js?v=4200';
-import { initTOCToggle } from './toc.js?v=4200';
-import { goToPage } from './dashboard.js?v=4200';
+import { navigate } from './router.js?v=4300';
+import { initTOCToggle } from './toc.js?v=4300';
+import { goToPage } from './dashboard.js?v=4300';
 
 // Expose goToPage to global scope for pagination
 window.goToPage = goToPage;
