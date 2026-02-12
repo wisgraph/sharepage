@@ -104,8 +104,9 @@ function generateStaticHtml(template, mdFilename) {
     const DOMAIN = 'https://wis-graph.github.io/sharepage'; // TODO: Make configurable
 
     // Update URL
-    const outputFilename = mdFilename.replace(/\.md$/, '.html');
-    const pageUrl = `${DOMAIN}/posts/${encodeURIComponent(outputFilename)}`;
+    // We are generating ROOT_DIR/NoteName/index.html to support .../sharepage/NoteName URLs
+    const urlSlug = mdFilename.replace(/\.md$/, '');
+    const pageUrl = `${DOMAIN}/${encodeURIComponent(urlSlug)}`;
     html = html.replace(/<meta property="og:url" content=".*?">/, `<meta property="og:url" content="${pageUrl}">`);
 
     // Update Image
@@ -123,8 +124,25 @@ function generateStaticHtml(template, mdFilename) {
         html = html.replace(/<meta property="og:image" content=".*?">/, `<meta property="og:image" content="${finalImage}">`);
     }
 
-    fs.writeFileSync(path.join(POSTS_DIR, outputFilename), html);
-    console.log(`[Sync] Generated: posts/${outputFilename}`);
+    // Generate Directory-based Static File (Pre-rendering)
+    // Structure: /Note Name/index.html
+    // This allows .../sharepage/Note%20Name to resolve to 200 OK index.html
+    const dirName = mdFilename.replace(/\.md$/, '');
+
+    // Skip if dirname conflicts with system folders
+    const RESERVED = ['css', 'js', 'images', 'notes', 'posts', 'scripts', '.git', '.github', 'node_modules'];
+    if (RESERVED.includes(dirName)) {
+        console.warn(`[Sync] Skipping reserved directory name: ${dirName}`);
+        return;
+    }
+
+    const outputDir = path.join(ROOT_DIR, dirName);
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    fs.writeFileSync(path.join(outputDir, 'index.html'), html);
+    console.log(`[Sync] Generated: ${dirName}/index.html`);
 }
 
 /**
