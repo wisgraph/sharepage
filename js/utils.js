@@ -11,10 +11,16 @@ export function getRawUrl(filename) {
 
   const encodedFilename = encodeURIComponent(targetFile);
 
-  // Use a relative path with ./
-  // GitHub Pages needs this to resolve files relative to the current index.html location.
-  // This also works for local 'serve'.
-  return `./${encodedFilename}`;
+  // Determine if we are running locally
+  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+  if (isLocal) {
+    // Local 'serve' prefers simple filename
+    return encodedFilename;
+  } else {
+    // GitHub Pages needs explicit relative path './'
+    return `./${encodedFilename}`;
+  }
 }
 
 export async function fetchFile(filename) {
