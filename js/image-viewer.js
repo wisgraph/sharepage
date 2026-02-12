@@ -155,3 +155,20 @@ const handleDragEnd = () => {
 // Initialize listeners once
 window.addEventListener('mousemove', handleDragMove);
 window.addEventListener('mouseup', handleDragEnd);
+
+function updateTransform(img) {
+    if (!img) return;
+    img.style.transform = `translate(${moveX}px, ${moveY}px) scale(${currentScale})`;
+}
+
+function closeModal() {
+    console.log('[ImageViewer] Closing modal');
+    const modal = document.getElementById('image-viewer-modal');
+    if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+        if (modal._handleEsc) {
+            window.removeEventListener('keydown', modal._handleEsc);
+        }
+    }
+}
