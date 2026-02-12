@@ -3,6 +3,7 @@ import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMat
 import { loadDashboardNotes, renderDashboardPage } from './dashboard.js';
 import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js';
 import { initImageViewer } from './image-viewer.js';
+import { initCodeUtils } from './code-utils.js';
 
 function removeFrontmatter(markdown) {
   return markdown.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
@@ -67,6 +68,7 @@ export async function navigate(hash) {
 
         document.getElementById('app').innerHTML = `<div class="document-container markdown">${html}</div>`;
         initImageViewer();
+        initCodeUtils();
 
         const mermaidElements = document.querySelectorAll('.mermaid');
         console.log('[Router] Found mermaid elements:', mermaidElements.length);

@@ -29,9 +29,9 @@ export function protectMath(markdown) {
 export function restoreMath(html) {
   for (const [placeholder, data] of mathMap.entries()) {
     try {
-      const rendered = katex.renderToString(data.math, { 
+      const rendered = katex.renderToString(data.math, {
         displayMode: data.displayMode,
-        throwOnError: false 
+        throwOnError: false
       });
       // Important: Use replaceAll if supported or a global regex
       html = html.split(placeholder).join(rendered);
@@ -49,7 +49,7 @@ export function applySyntaxHighlighting(html) {
   const doc = parser.parseFromString(html, 'text/html');
 
   const codeBlocks = doc.querySelectorAll('pre code');
-  
+
   codeBlocks.forEach((block) => {
     const code = block.textContent;
     const language = block.className.match(/language-(\w+)/)?.[1];
@@ -82,11 +82,12 @@ export function renderMermaidDiagrams(html) {
     const code = block.textContent.trim();
     const container = document.createElement('div');
     container.className = 'mermaid';
+    container.setAttribute('data-code', code); // Store original code for copy function
     container.textContent = code;
-    
+
     // Replace the whole pre or code block
-    const target = block.tagName.toLowerCase() === 'code' && block.parentElement.tagName.toLowerCase() === 'pre' 
-      ? block.parentElement 
+    const target = block.tagName.toLowerCase() === 'code' && block.parentElement.tagName.toLowerCase() === 'pre'
+      ? block.parentElement
       : block;
     target.replaceWith(container);
   });
