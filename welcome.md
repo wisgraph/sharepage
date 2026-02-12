@@ -1,6 +1,7 @@
 ---
 title: Welcome
 description: Welcome to **SharePage**!
+thumbnail: logo.png
 tags: [welcome, guide, sharepage]
 ---
 

@@ -1,4 +1,4 @@
-import { fetchFile, getRawUrl, transformObsidianImageLinks } from '../utils.js';
+import { fetchFile, getRawUrl, transformObsidianImageLinks, parseFrontmatter } from '../utils.js';
 
 export function extractDashboardLinks(dashboardContent) {
   console.log('[Dashboard] Extracting links from dashboard...');
@@ -23,35 +23,24 @@ export function extractDashboardLinks(dashboardContent) {
 }
 
 function extractMetadata(markdown, filename) {
-  const frontmatterMatch = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  let title = filename.replace(/\.md$/, '').replace(/^_/, '');
-  let description = '';
-  let thumbnail = null;
+  // Use core utility for consistent parsing
+  const { data, content: contentWithoutFrontmatter } = parseFrontmatter(markdown);
 
-  if (frontmatterMatch) {
-    const frontmatter = frontmatterMatch[1];
-    const titleMatch = frontmatter.match(/^title:\s*(.+)$/m);
-    if (titleMatch) {
-      title = titleMatch[1].trim().replace(/^["']|["']$/g, '');
+  let title = data.title || filename.replace(/\.md$/, '').replace(/^_/, '');
+  let description = data.description || data.summary || data.excerpt || '';
+  let thumbnail = data.thumbnail || null;
+
+  if (!description) {
+    // Extract first heading or first line
+    const firstParagraph = contentWithoutFrontmatter.match(/^#+\s*(.+)$/m) ||
+      contentWithoutFrontmatter.match(/^(?!\s*$|#+\s).+/m);
+
+    if (firstParagraph) {
+      description = firstParagraph[1]
+        .replace(/[#*`_\[\]]/g, '')
+        .trim()
+        .substring(0, 150);
     }
-
-    const thumbnailMatch = frontmatter.match(/^thumbnail:\s*(.+)$/m);
-    if (thumbnailMatch) {
-      thumbnail = thumbnailMatch[1].trim().replace(/^["']|["']$/g, '');
-    }
-  }
-
-  const contentWithoutFrontmatter = frontmatterMatch
-    ? markdown.replace(/^---\r?\n[\s\S]*?\r?\n---(\r?\n)?/, '')
-    : markdown;
-
-  const firstParagraph = contentWithoutFrontmatter.match(/^#+\s*(.+)$/m) ||
-    contentWithoutFrontmatter.match(/^(?!\s*$|#+\s).+/m);
-
-  if (firstParagraph) {
-    description = firstParagraph[1]
-      .replace(/[#*`_\[\]]/g, '')
-      .substring(0, 150);
   }
 
   return {

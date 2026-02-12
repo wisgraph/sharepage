@@ -1,10 +1,10 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=3800';
-import { createTagTicker } from './tag-ticker.js?v=3800';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=3800';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=3800';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=3800';
-import { initImageViewer } from './image-viewer.js?v=3800';
-import { initCodeUtils } from './code-utils.js?v=3800';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=3900';
+import { createTagTicker } from './tag-ticker.js?v=3900';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=3900';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=3900';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=3900';
+import { initImageViewer } from './image-viewer.js?v=3900';
+import { initCodeUtils } from './code-utils.js?v=3900';
 
 /**
  * Main navigation entry point
