@@ -65,19 +65,29 @@
 
 /* Main Layout */
 .main-layout {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr min(900px, 100%) 1fr;
   margin-top: 80px;
-  padding: 0 var(--space-3) var(--space-6);
+  padding: 0 var(--space-4) var(--space-6);
   gap: var(--space-4);
+  align-items: start;
 }
 
 .content-wrapper {
-  flex: 1;
-  max-width: 1440px;
-  margin: 0 auto;
+  grid-column: 2;
+  width: 100%;
 }
 
 .main-content {
-  max-width: 900px;
-  margin: 0 auto;
+  width: 100%;
+}
+
+.toc-sidebar {
+  grid-column: 3;
+  width: 250px;
+  position: sticky;
+  top: 100px;
+  height: calc(100vh - 120px);
+  overflow-y: auto;
+  justify-self: start;
 }

@@ -1,16 +1,13 @@
 /* TOC Sidebar */
 .toc-sidebar {
-  width: 250px;
-  position: sticky;
-  top: 100px;
-  height: calc(100vh - 120px);
-  overflow-y: auto;
   display: none;
+  /* Hidden by default, shown when the 'visible' class is added by JS */
 }
 
 .toc-sidebar.visible {
   display: block;
 }
+
 
 .toc-toggle {
   display: none;
