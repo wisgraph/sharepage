@@ -1,4 +1,4 @@
-import { slugify } from './utils.js?v=31000';
+import { slugify } from './utils.js?v=31001';
 
 console.log('[TOC] Module loaded');
 
