@@ -47,23 +47,34 @@ function generateStaticHtml(template, mdFilename) {
 
     // Handle thumbnail
     let ogImage = '';
-    // The app logic for images is:
-    // if starts with http -> use as is
-    // else -> encodeURIComponent(_image_ + filename)
-    if (data.thumbnail) {
-        if (data.thumbnail.startsWith('http')) {
-            ogImage = data.thumbnail;
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+
+    // Logic for picking a thumbnail
+    const rawThumbnail = data.thumbnail || data.url || '';
+
+    if (rawThumbnail) {
+        const ytMatch = rawThumbnail.match(youtubeRegex);
+        if (ytMatch && ytMatch[1]) {
+            ogImage = `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+        } else if (rawThumbnail.startsWith('http')) {
+            ogImage = rawThumbnail;
         } else {
-            ogImage = `_image_${data.thumbnail}`;
+            ogImage = `_image_${rawThumbnail}`;
         }
-    } else {
-        // Try to find first image in body
-        const imageMatch = content.match(/!\[\[([^\]]+)\]\]/) || content.match(/!\[.*?\]\((.*?)\)/);
+    }
+
+    if (!ogImage) {
+        // Try to find first image or video link in body
+        const imageMatch = body.match(/!\[\[([^\]]+)\]\]/) || body.match(/!\[.*?\]\((.*?)\)/);
         if (imageMatch) {
-            // Note: the regex might capture things that aren't images, but it's a good heuristic
             const rawUrl = imageMatch[1] || imageMatch[2];
             if (rawUrl) {
-                ogImage = rawUrl.startsWith('http') ? rawUrl : `_image_${rawUrl}`;
+                const ytMatch = rawUrl.match(youtubeRegex);
+                if (ytMatch && ytMatch[1]) {
+                    ogImage = `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+                } else {
+                    ogImage = rawUrl.startsWith('http') ? rawUrl : `_image_${rawUrl}`;
+                }
             }
         }
     }

@@ -232,7 +232,7 @@ async function processDocument(filename, rawContent) {
       } else if (markdownMatch) {
         // Markdown image found first
         const url = markdownMatch[2];
-        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=5000)|youtu\.be\/)([^"&?\/\s]{11})/;
+        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
         const ytMatch = url.match(youtubeRegex);
 
         if (ytMatch && ytMatch[1]) {
