@@ -1,11 +1,11 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL } from './utils.js?v=13000';
-import { createTagTicker } from './tag-ticker.js?v=13000';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=13000';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=13000';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=13000';
-import { initImageViewer } from './image-viewer.js?v=13000';
-import { initCodeUtils } from './code-utils.js?v=13000';
-import { initLinkPreviews } from './preview.js?v=13000';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL } from './utils.js?v=14000';
+import { createTagTicker } from './tag-ticker.js?v=14000';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=14000';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=14000';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=14000';
+import { initImageViewer } from './image-viewer.js?v=14000';
+import { initCodeUtils } from './code-utils.js?v=14000';
+import { initLinkPreviews } from './preview.js?v=14000';
 
 /**
  * Main navigation entry point
@@ -353,7 +353,7 @@ async function initPostRenderScripts() {
 function renderError(resourceName, error) {
   console.error(`[Router] Error loading ${resourceName}: `, error);
   document.getElementById('app').innerHTML = `
-    < div class="error-container" >
+    <div class="error-container">
       <h1>404 Not Found</h1>
       <p>The document "<strong>${resourceName}</strong>" could not be loaded.</p>
       <br/>
