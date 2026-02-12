@@ -184,6 +184,9 @@ async function processDocument(filename, rawContent) {
   // 2. Transform Images
   content = transformObsidianImageLinks(content);
 
+  // 2.1. Transform Internal Links
+  content = transformInternalLinks(content);
+
   // 2.5. Transform YouTube Links
   content = transformYouTubeLinks(content);
 
@@ -191,6 +194,18 @@ async function processDocument(filename, rawContent) {
   content = protectMath(content);
 
   // 4. Parse Markdown into HTML
+  // Set options for better Obsidian/GFM compatibility
+  marked.use({
+    gfm: true,
+    breaks: true,
+    mangle: false,
+    headerIds: false
+  });
+
+  // Pre-process for CJK Bold boundaries (Standard CommonMark fails on **bold**word)
+  // We insert a Zero Width Space if a bold span is followed immediately by a word character
+  content = content.replace(/(\*\*|__)(.+?)\1(?=[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\w])/g, '$1$2$1\u200B');
+
   let html = marked.parse(content);
 
   // 5. Post-processing HTML
