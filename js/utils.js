@@ -3,13 +3,17 @@ export const PAGINATION_ITEMS_PER_PAGE = 9;
 export function getRawUrl(filename) {
   if (filename.startsWith('http')) return filename;
 
-  // Ensure filename has .md extension if it's not a special file or image
   let targetFile = filename;
+  // Add .md extension if missing (and not an image or system file)
   if (!targetFile.includes('.') && !targetFile.startsWith('_image_')) {
     targetFile += '.md';
   }
 
   const encodedFilename = encodeURIComponent(targetFile);
+
+  // Use a root-relative path to avoid issues with trailing slashes
+  // In local 'serve', it's just the filename. On GH Pages, it's also inside the repo folder.
+  // Using '.' ensures it stays relative to the current index.html location.
   return `./${encodedFilename}`;
 }
 
