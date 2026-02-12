@@ -1,6 +1,6 @@
-import { navigate } from './router.js?v=4900';
-import { initTOCToggle } from './toc.js?v=4900';
-import { goToPage } from './dashboard.js?v=4900';
+import { navigate, initRouter } from './router.js?v=5000';
+import { initTOCToggle } from './toc.js?v=5000';
+import { goToPage } from './dashboard.js?v=5000';
 
 // Expose goToPage to global scope for pagination
 window.goToPage = goToPage;
@@ -71,25 +71,8 @@ async function toggleTheme() {
   }
 }
 
-function handleHashChange() {
-  const hash = window.location.hash.slice(1) || '/';
-  console.log('[Router] Hash changed:', hash);
-  window.scrollTo(0, 0);
-
-  if (document.startViewTransition) {
-    document.startViewTransition(() => navigate(hash));
-  } else {
-    navigate(hash);
-  }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('[App] Initializing...');
-
-  console.log('[App] marked.js loaded:', typeof marked !== 'undefined');
-  console.log('[App] highlight.js loaded:', typeof hljs !== 'undefined');
-  console.log('[App] mermaid loaded:', typeof mermaid !== 'undefined');
-  console.log('[App] katex loaded:', typeof katex !== 'undefined');
+  console.log('[App] Initializing history-based routing...');
 
   if (typeof hljs === 'undefined') {
     console.error('[App] Error: highlight.js is not loaded');
@@ -97,16 +80,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // Initial mermaid setup will be called by initTheme()
-
   initTheme();
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 
+  initRouter();
   initTOCToggle();
 
-  handleHashChange();
-});
+  // Initial navigation based on current path
+  const path = window.location.pathname;
+  const hash = window.location.hash;
 
-window.addEventListener('hashchange', handleHashChange);
+  if (hash.startsWith('#/')) {
+    // Redirect old hash links to paths
+    const newPath = hash.slice(1);
+    history.replaceState(null, '', newPath);
+    navigate(newPath);
+  } else {
+    navigate(path);
+  }
+});
 
 export { initTheme, updateThemeIcon, toggleTheme };

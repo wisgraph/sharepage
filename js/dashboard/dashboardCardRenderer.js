@@ -1,4 +1,4 @@
-import { prefetchFile } from '../utils.js?v=4900';
+import { prefetchFile } from '../utils.js?v=5000';
 
 export function renderNoteThumbnail(note) {
   if (note.thumbnail) {
@@ -45,6 +45,8 @@ window.prefetchNote = (file) => {
   prefetchFile(file);
 };
 
+import { navigate } from '../router.js?v=5000';
+
 window.handleCardClick = (path, el) => {
   // Add a quick feedback class
   el.classList.add('is-active');
@@ -56,10 +58,13 @@ window.handleCardClick = (path, el) => {
   if (thumbnail) thumbnail.style.viewTransitionName = 'active-note-thumbnail';
   if (title) title.style.viewTransitionName = 'active-note-expand';
 
+  const navigateTo = () => {
+    history.pushState(null, '', path);
+    navigate(path);
+  };
+
   if (document.startViewTransition) {
-    const transition = document.startViewTransition(() => {
-      window.location.hash = path;
-    });
+    const transition = document.startViewTransition(navigateTo);
 
     // Clean up style after transition finishes
     transition.finished.finally(() => {
@@ -67,7 +72,7 @@ window.handleCardClick = (path, el) => {
       if (title) title.style.viewTransitionName = '';
     });
   } else {
-    window.location.hash = path;
+    navigateTo();
   }
 };
 

@@ -61,7 +61,7 @@ export function transformInternalLinks(html) {
     /\[\[(.*?)\]\]/g,
     (match, filename) => {
       const path = '/' + filename.replace(/\.md$/, '');
-      return `<a href="#${path}" class="internal-link">${filename}</a>`;
+      return `<a href="${path}" class="internal-link">${filename}</a>`;
     }
   );
 }

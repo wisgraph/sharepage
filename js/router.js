@@ -1,22 +1,77 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=4900';
-import { createTagTicker } from './tag-ticker.js?v=4900';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=4900';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=4900';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=4900';
-import { initImageViewer } from './image-viewer.js?v=4900';
-import { initCodeUtils } from './code-utils.js?v=4900';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=5000';
+import { createTagTicker } from './tag-ticker.js?v=5000';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=5000';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=5000';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=5000';
+import { initImageViewer } from './image-viewer.js?v=5000';
+import { initCodeUtils } from './code-utils.js?v=5000';
+import { initLinkPreviews } from './preview.js?v=5000';
 
 /**
  * Main navigation entry point
- * @param {string} hash - The URL hash (e.g. #/My-Note)
+ * @param {string} path - The URL path (e.g. /My-Note)
  */
-export async function navigate(hash) {
-  if (hash === '/' || hash === '') {
+export async function navigate(path) {
+  console.log('[Router] Navigating to:', path);
+
+  // Normalize path
+  let normalizedPath = path;
+  if (normalizedPath.endsWith('.html')) {
+    normalizedPath = normalizedPath.slice(0, -5);
+  }
+  if (normalizedPath === '' || normalizedPath === '/') {
     await handleDashboardRoute();
   } else {
-    const filename = decodeURIComponent(hash.slice(1));
+    // Strip leading slash
+    const filename = decodeURIComponent(normalizedPath.startsWith('/') ? normalizedPath.slice(1) : normalizedPath);
     await handleDocumentRoute(filename);
   }
+}
+
+/**
+ * Global click interceptor for internal links
+ */
+export function initRouter() {
+  document.body.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+    if (!href) return;
+
+    // Handle internal path links (starting with / or same origin)
+    if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+      const url = new URL(href, window.location.origin);
+
+      // Don't intercept if it's an external link or has a different origin
+      if (url.origin !== window.location.origin) return;
+
+      e.preventDefault();
+
+      const path = url.pathname;
+
+      if (window.location.pathname === path) return;
+
+      history.pushState(null, '', path);
+
+      if (document.startViewTransition) {
+        document.startViewTransition(() => navigate(path));
+      } else {
+        navigate(path);
+      }
+    }
+    // Handle old hash links for backward compatibility
+    else if (href.startsWith('#/')) {
+      e.preventDefault();
+      const path = href.slice(1); // /MyNote
+      history.pushState(null, '', path);
+      navigate(path);
+    }
+  });
+
+  window.addEventListener('popstate', () => {
+    navigate(window.location.pathname);
+  });
 }
 
 /**
@@ -158,7 +213,7 @@ async function processDocument(filename, rawContent) {
       } else if (markdownMatch) {
         // Markdown image found first
         const url = markdownMatch[2];
-        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=4900)|youtu\.be\/)([^"&?\/\s]{11})/;
+        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=5000)|youtu\.be\/)([^"&?\/\s]{11})/;
         const ytMatch = url.match(youtubeRegex);
 
         if (ytMatch && ytMatch[1]) {
@@ -234,6 +289,7 @@ function renderDocumentView(title, tags, html, metadata) {
 async function initPostRenderScripts() {
   initImageViewer();
   initCodeUtils();
+  initLinkPreviews();
 
   // Initialize Mermaid
   const mermaidElements = document.querySelectorAll('.mermaid');
@@ -264,7 +320,7 @@ function renderError(resourceName, error) {
       <p>The document "<strong>${resourceName}</strong>" could not be loaded.</p>
       <br/>
       <p class="error-detail">${error.message}</p>
-      <a href="#/" class="back-button">Go to Dashboard</a>
-    </div >
+      <a href="/" class="back-button">Go to Dashboard</a>
+    </div>
     `;
 }
