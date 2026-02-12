@@ -2,7 +2,7 @@
 thumbnail: logo.png
 ---
 
-# Welcome to ShareHub!
+# Welcome to **ShareHub**!
 
 This is a sample note to demonstrate ShareHub's markdown rendering capabilities.
 
@@ -14,6 +14,10 @@ ShareHub is a tool that allows you to share your Obsidian notes via GitHub Pages
 - **Internal links** - Navigate between notes using `[[note]]` syntax
 - **Image support** - Display images with `![[image]]` syntax
 - **MOC support** - Organize your notes with Map of Content files
+
+## High-Contrast Bold Styling
+
+In ShareHub, **bold text** is not just thick; it's **high-contrast**. This makes **important information** stand out immediately against the theme background. Whether you are in **Light Mode** or **Dark Mode**, the colors will **invert** to ensure **maximum visibility**.
 
 ## Code Examples
 

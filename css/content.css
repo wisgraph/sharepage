@@ -146,6 +146,17 @@
   color: var(--color-text-body);
 }
 
+.markdown strong {
+  background-color: var(--color-text-primary);
+  color: var(--color-surface-base);
+  padding: 0px 4px;
+  border-radius: 2px;
+  font-weight: 500;
+  /* Subtle weight since we have contrast */
+  display: inline-block;
+  line-height: 1.2;
+}
+
 .markdown ul,
 .markdown ol {
   margin-left: 28px;
