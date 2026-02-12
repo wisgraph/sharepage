@@ -17,10 +17,20 @@ export function addHeadingIds(html) {
   const headings = doc.querySelectorAll('h1, h2, h3, h4');
   console.log('[TOC] Found headings:', headings.length);
 
+  const idCounts = {};
+
   headings.forEach((heading) => {
     const level = parseInt(heading.tagName[1]);
     const text = heading.textContent;
-    const id = slugify(text);
+    let id = slugify(text);
+
+    // Ensure unique ID
+    if (idCounts[id]) {
+      idCounts[id]++;
+      id = `${id}-${idCounts[id]}`;
+    } else {
+      idCounts[id] = 1;
+    }
 
     heading.id = id;
     console.log('[TOC] Added ID:', id, '(h' + level + ')');
