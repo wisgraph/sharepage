@@ -1,12 +1,13 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL } from './utils.js?v=30001';
-import { createTagTicker } from './tag-ticker.js?v=30001';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=30001';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=30001';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=30001';
-import { initImageViewer } from './image-viewer.js?v=30001';
-import { initCodeUtils } from './code-utils.js?v=30001';
-import { initLinkPreviews } from './preview.js?v=30001';
-import { transformCallouts } from './callouts.js?v=30001';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL } from './utils.js?v=31000';
+import { createTagTicker } from './tag-ticker.js?v=31000';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=31000';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=31000';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=31000';
+import { initImageViewer } from './image-viewer.js?v=31000';
+import { initCodeUtils } from './code-utils.js?v=31000';
+import { initLinkPreviews } from './preview.js?v=31000';
+import { transformCallouts } from './callouts.js?v=31000';
+import { initScrollAnimations, cleanupScrollAnimations } from './animations.js?v=31000';
 
 /**
  * Main navigation entry point
@@ -150,6 +151,7 @@ async function handleDocumentRoute(filename) {
  */
 function prepareLayout({ isDashboard }) {
   stopScrollHighlight();
+  cleanupScrollAnimations();
 
   const tocSidebar = document.getElementById('toc-sidebar');
   const tocContainer = document.getElementById('toc-content');
@@ -347,6 +349,9 @@ async function initPostRenderScripts() {
   // Initialize TOC
   renderTOC();
   initScrollHighlight();
+
+  // Initialize scroll animations
+  initScrollAnimations();
 
   console.log('[Router] Content fully rendered');
 }
