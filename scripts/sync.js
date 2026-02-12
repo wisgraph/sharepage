@@ -109,9 +109,10 @@ function generateStaticHtml(template, mdFilename) {
     const DOMAIN = 'https://wis-graph.github.io/sharepage'; // TODO: Make configurable
 
     // Update URL
-    // We are generating ROOT_DIR/posts/NoteName.html to support .../sharepage/posts/NoteName.html URLs
+    // og:url should point to the SPA route for users, not the static HTML
+    // Static HTML at posts/NoteName.html is only for crawlers
     const urlSlug = mdFilename.replace(/\.md$/, '');
-    const pageUrl = `${DOMAIN}/posts/${encodeURIComponent(urlSlug)}.html`;
+    const pageUrl = `${DOMAIN}/${encodeURIComponent(urlSlug)}`;
     html = html.replace(/<meta property="og:url" content=".*?">/, `<meta property="og:url" content="${pageUrl}">`);
 
     // Update Image
