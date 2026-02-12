@@ -76,19 +76,22 @@
 }
 
 /* Main Layout */
+/* Main Layout */
 .main-layout {
-  display: grid;
-  grid-template-columns: 1fr min(900px, 100%) 1fr;
+  display: flex;
+  justify-content: center;
   margin-top: 100px;
-  /* Reduced to remove the gap */
   padding: 0 var(--space-4) var(--space-6);
   gap: var(--space-4);
   align-items: start;
 }
 
 .main-layout.is-dashboard {
-  grid-template-columns: 1fr min(1600px, 100%) 1fr;
-  /* Increased max width for dashboard */
+  /* Increase max width for dashboard */
+  width: 100%;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .main-layout.is-dashboard .toc-sidebar {
@@ -97,8 +100,9 @@
 }
 
 .content-wrapper {
-  grid-column: 2;
+  flex: 1;
   width: 100%;
+  max-width: 900px;
 }
 
 .main-content {
@@ -106,7 +110,6 @@
 }
 
 .toc-sidebar {
-  grid-column: 3;
   width: 250px;
   position: sticky;
   top: 100px;
