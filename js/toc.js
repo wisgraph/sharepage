@@ -129,7 +129,9 @@ function bindTOCClickEvents() {
   tocContainer.querySelectorAll('.toc-link').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      const target = document.querySelector(link.getAttribute('href'));
+      const href = link.getAttribute('href');
+      const targetId = href.startsWith('#') ? href.slice(1) : href;
+      const target = document.getElementById(targetId);
 
       if (target) {
         const yOffset = -80;
