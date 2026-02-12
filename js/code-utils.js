@@ -82,7 +82,7 @@ function attachMermaidActions() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
       Image
     `;
-        copyImgBtn.onclick = () => saveMermaidAsImage(container);
+        copyImgBtn.onclick = () => saveMermaidAsImage(container, copyImgBtn);
 
         actionLayer.appendChild(copyCodeBtn);
         actionLayer.appendChild(copyImgBtn);
@@ -90,7 +90,7 @@ function attachMermaidActions() {
     });
 }
 
-function saveMermaidAsImage(container) {
+function saveMermaidAsImage(container, btn) {
     const svg = container.querySelector('svg');
     if (!svg) return;
 
@@ -114,10 +114,14 @@ function saveMermaidAsImage(container) {
         ctx.drawImage(img, padding, padding);
 
         canvas.toBlob(blob => {
+            const originalHTML = btn.innerHTML;
             try {
                 const item = new ClipboardItem({ "image/png": blob });
                 navigator.clipboard.write([item]);
-                alert('Diagram copied to clipboard as PNG');
+
+                // Visual feedback instead of alert
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.innerHTML = originalHTML, 2000);
             } catch (err) {
                 // Fallback: Download
                 const url = URL.createObjectURL(blob);
@@ -125,6 +129,9 @@ function saveMermaidAsImage(container) {
                 a.href = url;
                 a.download = 'mermaid-diagram.png';
                 a.click();
+
+                btn.textContent = 'Downloaded!';
+                setTimeout(() => btn.innerHTML = originalHTML, 2000);
             }
         });
     };
