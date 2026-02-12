@@ -1,19 +1,40 @@
 import { prefetchFile, BASE_PATH, IS_LOCAL } from '../utils.js?v=5000';
 import { navigate } from '../router.js?v=5000';
 
+const PREMIUM_GRADIENTS = [
+  'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)',
+  'linear-gradient(135deg, #ff0844 0%, #ffb199 100%)',
+  'linear-gradient(135deg, #00c6fb 0%, #005bea 100%)',
+  'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+  'linear-gradient(135deg, #5eeff9 0%, #4568dc 100%)',
+  'linear-gradient(135deg, #f83600 0%, #f9d423 100%)',
+  'linear-gradient(135deg, #b721ff 0%, #21d4fd 100%)',
+  'linear-gradient(135deg, #09203f 0%, #537895 100%)',
+  'linear-gradient(135deg, #0093e9 0%, #80d0c7 100%)'
+];
+
+function getPremiumGradient(title) {
+  // Simple hash for consistent coloring per title
+  let hash = 0;
+  for (let i = 0; i < title.length; i++) {
+    hash = title.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % PREMIUM_GRADIENTS.length;
+  return PREMIUM_GRADIENTS[index];
+}
+
 export function renderNoteThumbnail(note) {
   if (note.thumbnail) {
     console.log('[Card] Using thumbnail:', note.thumbnail);
     return `<img class="note-card-thumbnail" src="${note.thumbnail}" alt="${note.title}" loading="lazy">`;
   }
 
-  console.log('[Card] Using placeholder');
+  const gradient = getPremiumGradient(note.title);
+  console.log('[Card] Using gradient placeholder');
   return `
-    <div class="note-card-thumbnail-placeholder">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-        <line x1="9" y1="3" x2="9" y2="21" />
-      </svg>
+    <div class="note-card-thumbnail-placeholder" style="background: ${gradient}">
+      <div class="placeholder-title">${note.title}</div>
     </div>
   `;
 }
