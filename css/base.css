@@ -17,6 +17,12 @@ body {
   width: 100%;
 }
 
+/* Hide global scrollbar (scrollbar is hidden but content is still scrollable) */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
 /* Spinner Overlay */
 .loading-container {
   display: flex;
