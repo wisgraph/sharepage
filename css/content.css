@@ -1,7 +1,8 @@
 /* Document Container */
 .document-container {
   background-color: transparent;
-  padding: var(--space-6) 0;
+  padding: var(--space-6) 0 40vh 0;
+  /* Huge bottom padding to support TOC tracking */
 }
 
 .loading,

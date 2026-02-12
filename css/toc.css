@@ -64,7 +64,7 @@
 
 .toc-link:hover {
   color: var(--color-accent-primary);
-  border-left-color: var(--color-accent-primary);
+  /* No border change on hover per request */
 }
 
 .toc-link.active {
