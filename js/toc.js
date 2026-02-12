@@ -157,7 +157,18 @@ function highlightActiveTOCItem(id) {
     link.classList.remove('active');
     if (link.dataset.target === id) {
       link.classList.add('active');
-      // Removed scrollIntoView to prevent stealing focus from main content
+
+      // Auto-scroll safely
+      const sidebar = document.getElementById('toc-sidebar');
+      if (sidebar && sidebar.classList.contains('visible')) {
+        const linkRect = link.getBoundingClientRect();
+        const sidebarRect = sidebar.getBoundingClientRect();
+
+        // Check if link is outside viewable area of sidebar
+        if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+          link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      }
     }
   });
 }

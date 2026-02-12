@@ -8,6 +8,24 @@
   display: block;
 }
 
+/* Custom TOC Scrollbar */
+.toc-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.toc-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.toc-sidebar::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-default);
+  border-radius: 4px;
+}
+
+.toc-sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-meta);
+}
+
 
 .toc-toggle {
   display: none;
