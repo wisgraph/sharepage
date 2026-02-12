@@ -1,13 +1,13 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL } from './utils.js?v=31001';
-import { createTagTicker } from './tag-ticker.js?v=31001';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=31001';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=31001';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=31001';
-import { initImageViewer } from './image-viewer.js?v=31001';
-import { initCodeUtils } from './code-utils.js?v=31001';
-import { initLinkPreviews } from './preview.js?v=31001';
-import { transformCallouts } from './callouts.js?v=31001';
-import { initScrollAnimations, cleanupScrollAnimations } from './animations.js?v=31001';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL } from './utils.js?v=32000';
+import { createTagTicker } from './tag-ticker.js?v=32000';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=32000';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=32000';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=32000';
+import { initImageViewer } from './image-viewer.js?v=32000';
+import { initCodeUtils } from './code-utils.js?v=32000';
+import { initLinkPreviews } from './preview.js?v=32000';
+import { transformCallouts } from './callouts.js?v=32000';
+import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations, cleanupDashboardAnimations } from './animations.js?v=32000';
 
 /**
  * Main navigation entry point
@@ -111,6 +111,9 @@ async function handleDashboardRoute() {
     const html = await renderDashboardPage(1);
     document.getElementById('app').innerHTML = html;
     window.scrollTo(0, 0);
+
+    // Initialize dashboard card animations
+    initDashboardAnimations();
   } catch (error) {
     renderError('Dashboard', error);
   }
@@ -152,6 +155,7 @@ async function handleDocumentRoute(filename) {
 function prepareLayout({ isDashboard }) {
   stopScrollHighlight();
   cleanupScrollAnimations();
+  cleanupDashboardAnimations();
 
   const tocSidebar = document.getElementById('toc-sidebar');
   const tocContainer = document.getElementById('toc-content');

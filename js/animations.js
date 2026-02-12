@@ -85,3 +85,70 @@ export function cleanupScrollAnimations() {
         console.log('[Animations] Cleaned up scroll animations');
     }
 }
+
+/**
+ * Dashboard Card Animations
+ */
+let dashboardObserver = null;
+
+export function initDashboardAnimations() {
+    console.log('[Animations] Initializing dashboard animations');
+
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+        console.log('[Animations] Reduced motion preferred, skipping animations');
+        return;
+    }
+
+    // Clean up existing observer
+    if (dashboardObserver) {
+        dashboardObserver.disconnect();
+    }
+
+    // Select dashboard cards
+    const cards = document.querySelectorAll('.note-card');
+    if (cards.length === 0) {
+        console.log('[Animations] No dashboard cards found');
+        return;
+    }
+
+    // Add animation class to each card
+    cards.forEach((card, index) => {
+        card.classList.add('animate-on-scroll');
+        // Override delay based on card index for stagger effect
+        card.style.transitionDelay = `${index * 0.05}s`;
+    });
+
+    // Create Intersection Observer
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -50px 0px',
+        threshold: 0.1
+    };
+
+    dashboardObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                // Unobserve after animation
+                dashboardObserver.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    // Observe all cards
+    cards.forEach(card => {
+        dashboardObserver.observe(card);
+    });
+
+    console.log(`[Animations] Observing ${cards.length} dashboard cards`);
+}
+
+export function cleanupDashboardAnimations() {
+    if (dashboardObserver) {
+        dashboardObserver.disconnect();
+        dashboardObserver = null;
+        console.log('[Animations] Cleaned up dashboard animations');
+    }
+}

@@ -1,4 +1,4 @@
-import { fetchFile, parseFrontmatter, getRawUrl } from './utils.js?v=31001';
+import { fetchFile, parseFrontmatter, getRawUrl } from './utils.js?v=32000';
 
 let previewTimeout = null;
 let currentPreview = null;

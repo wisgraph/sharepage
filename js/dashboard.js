@@ -1,6 +1,7 @@
-import { fetchFile } from './utils.js?v=31001';
-import { loadSectionedDashboard } from './dashboard/dashboardDataExtractor.js?v=31001';
-import { renderSectionedDashboard, renderDashboardControls } from './dashboard/dashboardCardRenderer.js?v=31001';
+import { fetchFile } from './utils.js?v=32000';
+import { loadSectionedDashboard } from './dashboard/dashboardDataExtractor.js?v=32000';
+import { renderSectionedDashboard, renderDashboardControls } from './dashboard/dashboardCardRenderer.js?v=32000';
+import { initDashboardAnimations } from './animations.js?v=32000';
 
 let dashboardState = {
   dashboardContent: '',
@@ -154,6 +155,9 @@ window.onDashboardSearch = (value) => {
     }
     // Append new content
     controls.insertAdjacentHTML('afterend', contentHtml);
+
+    // Re-initialize animations for new cards
+    initDashboardAnimations();
   } else {
     // Fallback
     app.innerHTML = renderFullDashboard();
