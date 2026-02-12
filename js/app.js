@@ -5,6 +5,27 @@ function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.body.className = savedTheme === 'dark' ? 'theme-dark' : '';
   updateThemeIcon(savedTheme);
+  initMermaid(savedTheme);
+}
+
+function initMermaid(appTheme) {
+  if (typeof mermaid === 'undefined') return;
+  const mermaidTheme = appTheme === 'dark' ? 'dark' : 'default';
+  console.log('[Mermaid] Initializing with theme:', mermaidTheme);
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: mermaidTheme,
+    securityLevel: 'loose',
+    fontFamily: 'inherit',
+    themeVariables: appTheme === 'dark' ? {
+      primaryColor: '#30363d',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#444c56',
+      lineColor: '#8b949e',
+      secondaryColor: '#21262d',
+      tertiaryColor: '#161b22'
+    } : {}
+  });
 }
 
 function updateThemeIcon(theme) {
@@ -21,12 +42,24 @@ function updateThemeIcon(theme) {
   }
 }
 
-function toggleTheme() {
+async function toggleTheme() {
   const isDark = document.body.classList.toggle('theme-dark');
   const theme = isDark ? 'dark' : 'light';
   localStorage.setItem('theme', theme);
   updateThemeIcon(theme);
   console.log('[Theme] Switched to', theme);
+
+  // Re-initialize mermaid with new theme
+  initMermaid(theme);
+
+  // Force re-render of existing diagrams if any
+  const mermaidElements = document.querySelectorAll('.mermaid');
+  if (mermaidElements.length > 0) {
+    console.log('[Theme] Re-rendering mermaid diagrams for', theme, 'mode');
+    // Note: We might need to restore original code before re-running mermaid.run
+    // But since mermaid.run usually works on the container text, we'll try:
+    location.reload(); // Simplest way to ensure all JS components (Mermaid, KaTeX) re-render correctly with new theme
+  }
 }
 
 function handleHashChange() {
@@ -50,12 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: 'default',
-    securityLevel: 'loose',
-    fontFamily: 'inherit'
-  });
+  // Initial mermaid setup will be called by initTheme()
 
   initTheme();
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
