@@ -1,13 +1,6 @@
-console.log('[TOC] Module loaded');
+import { slugify } from './utils.js?v=29001';
 
-function slugify(text) {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+console.log('[TOC] Module loaded');
 
 export function addHeadingIds(html) {
   console.log('[TOC] Adding heading IDs and anchors');

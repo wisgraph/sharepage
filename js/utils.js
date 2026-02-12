@@ -66,14 +66,46 @@ export function prefetchFile(filename) {
   fetchFile(filename).catch(() => { }); // Fire and forget, error handled inside fetchFile
 }
 
+export function slugify(text) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[\s]+/g, '-')
+    .replace(/[^\w\-\uAC00-\uD7A3]+/g, '') // Keep English, Numbers, -, and Korean
+    .replace(/^-+|-+$/g, '');
+}
+
 export function transformInternalLinks(html) {
   return html.replace(
     /\[\[(.*?)\]\]/g,
-    (match, filename) => {
-      // Internal links in SPA stay clean, router will prefix 'notes/' during fetch
-      const noteName = filename.replace(/\.md$/, '');
-      const path = (BASE_PATH || '') + '/' + noteName;
-      return `<a href="${path}" class="internal-link">${noteName}</a>`;
+    (match, content) => {
+      // content could be "Page Name" or "Page Name|Alias" or "#Heading" or "Page#Heading"
+      const parts = content.split('|');
+      const linkTarget = parts[0];
+      const linkAlias = parts[1]; // undefined if no alias
+
+      // Check for anchor link
+      if (linkTarget.startsWith('#')) {
+        // Current page anchor: [[#Heading]]
+        const heading = linkTarget.substring(1);
+        const sluggified = slugify(heading);
+        const text = linkAlias || heading;
+        return `<a href="#${sluggified}" class="internal-link anchor-link">${text}</a>`;
+      } else if (linkTarget.includes('#')) {
+        // Specific page anchor: [[Page#Heading]]
+        const [page, heading] = linkTarget.split('#');
+        const sluggifiedHeading = slugify(heading);
+        const noteName = page.replace(/\.md$/, '');
+        const path = (BASE_PATH || '') + '/' + noteName;
+        const text = linkAlias || (page + ' > ' + heading);
+        return `<a href="${path}#${sluggifiedHeading}" class="internal-link">${text}</a>`;
+      } else {
+        // Normal page link
+        const noteName = linkTarget.replace(/\.md$/, '');
+        const path = (BASE_PATH || '') + '/' + noteName;
+        const text = linkAlias || noteName;
+        return `<a href="${path}" class="internal-link">${text}</a>`;
+      }
     }
   );
 }
