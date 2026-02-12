@@ -55,7 +55,12 @@ function generateStaticHtml(template, mdFilename) {
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
 
     // Logic for picking a thumbnail
-    const rawThumbnail = data.thumbnail || data.url || '';
+    let rawThumbnail = data.thumbnail || data.url || '';
+
+    // Support Obsidian [[Wiki Link]] syntax in frontmatter
+    if (rawThumbnail.startsWith('[[') && rawThumbnail.endsWith(']]')) {
+        rawThumbnail = rawThumbnail.slice(2, -2);
+    }
 
     if (rawThumbnail) {
         const ytMatch = rawThumbnail.match(youtubeRegex);
