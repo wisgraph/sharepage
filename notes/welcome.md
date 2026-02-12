@@ -118,3 +118,49 @@ $$
 \nabla \times \mathbf{B} &= \mu_0\left(\mathbf{J} + \varepsilon_0\frac{\partial \mathbf{E}}{\partial t}\right)
 \end{aligned}
 $$
+
+## Obsidian Callouts
+
+SharePage supports Obsidian-style callout blocks with 12 different types and their aliases:
+
+**Supported Types:**
+- `note` (aliases: `seealso`)
+- `abstract` (aliases: `summary`, `tldr`)
+- `info` (aliases: `todo`)
+- `tip` (aliases: `hint`, `important`)
+- `success` (aliases: `check`, `done`)
+- `question` (aliases: `help`, `faq`)
+- `warning` (aliases: `caution`, `attention`)
+- `failure` (aliases: `fail`, `missing`)
+- `danger` (aliases: `error`)
+- `bug`
+- `example`
+- `quote` (aliases: `cite`)
+
+### Examples
+
+> [!note] Note Callout
+> This is a note callout. Use it for general information or side notes.
+
+> [!abstract] Abstract
+> This is an abstract callout, perfect for summaries or TL;DR sections.
+
+> [!tip] Pro Tip
+> Use callouts to make important information stand out in your documents!
+
+> [!warning] Warning
+> Be careful when using this feature in production environments.
+
+> [!success] Success
+> Your configuration has been saved successfully!
+
+> [!question] Did you know?
+> You can use any of the aliases listed above for each callout type.
+
+> [!danger] Danger Zone
+> This action cannot be undone. Proceed with caution.
+
+> [!example] Code Example
+> ```javascript
+> const callout = { type: 'example', content: 'Hello!' };
+> ```
