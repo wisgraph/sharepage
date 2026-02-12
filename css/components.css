@@ -80,33 +80,32 @@
 /* View Transitions API (Chrome/Safari 18+) */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 0.4s;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-in-out;
+}
+
+/* Custom Expanded Transition: Shared Element Morphing */
+::view-transition-old(active-note-expand),
+::view-transition-new(active-note-expand) {
+  /* This ensures the card box itself morphs smoothly into the document box */
+  animation-duration: 0.5s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-::view-transition-old(root) {
-  animation-name: fade-out;
+::view-transition-new(active-note-expand) {
+  /* Layered fade-in of the new content during expansion */
+  animation-name: note-emerge;
 }
 
-::view-transition-new(root) {
-  animation-name: slide-up-and-fade-in;
-}
-
-@keyframes fade-out {
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes slide-up-and-fade-in {
+@keyframes note-emerge {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: scale(0.9) translateY(20px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1) translateY(0);
   }
 }
 

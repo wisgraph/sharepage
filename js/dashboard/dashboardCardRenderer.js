@@ -1,4 +1,4 @@
-import { prefetchFile } from '../utils.js?v=4700';
+import { prefetchFile } from '../utils.js?v=4800';
 
 export function renderNoteThumbnail(note) {
   if (note.thumbnail) {
@@ -49,10 +49,18 @@ window.handleCardClick = (path, el) => {
   // Add a quick feedback class
   el.classList.add('is-active');
 
-  // Use View Transition API if supported for "Next.js-like" smooth transition
+  // Set a shared transition name only on the clicked element
+  // This tells the browser: "This specific card becomes the next page content"
+  el.style.viewTransitionName = 'active-note-expand';
+
   if (document.startViewTransition) {
-    document.startViewTransition(() => {
+    const transition = document.startViewTransition(() => {
       window.location.hash = path;
+    });
+
+    // Clean up style after transition finishes to avoid duplicate names if returning
+    transition.finished.finally(() => {
+      if (el) el.style.viewTransitionName = '';
     });
   } else {
     window.location.hash = path;
