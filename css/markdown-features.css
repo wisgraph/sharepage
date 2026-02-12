@@ -1,60 +1,48 @@
 /* Markdown Extended Features (Mermaid, KaTeX, Checkboxes, etc.) */
 
-/* Modernized Checkbox */
-.markdown ul li:has(input[type="checkbox"]) {
+/* Modernized Checkbox and Task List */
+.markdown ul li:has(input[type="checkbox"]),
+.markdown ol li:has(input[type="checkbox"]) {
     list-style-type: none;
-    margin-left: -20px;
-    display: flex;
-    align-items: center;
+    position: relative;
+    padding-left: 1.8rem;
+    margin-left: -1.2rem;
+    display: block;
+    /* Removed flex to handle wrapping better */
 }
 
 .markdown input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border: 2px solid var(--color-border-default);
-    border-radius: 6px;
+    border-radius: 4px;
     background-color: var(--color-surface-base);
     cursor: pointer;
-    position: relative;
-    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
-    margin-right: 10px;
-    flex-shrink: 0;
+    position: absolute;
+    left: 0;
+    top: 4px;
+    /* Align with the first line of text */
+    margin: 0;
+    transition: all 0.2s ease;
 }
 
 .markdown input[type="checkbox"]:checked {
     background-color: var(--color-accent-primary);
     border-color: var(--color-accent-primary);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .markdown input[type="checkbox"]:checked::after {
     content: "";
     position: absolute;
     top: 2px;
-    left: 6px;
-    width: 5px;
-    height: 10px;
+    left: 5px;
+    width: 4px;
+    height: 8px;
     border: solid white;
-    border-width: 0 2.5px 2.5px 0;
+    border-width: 0 2px 2px 0;
     transform: rotate(45deg);
-}
-
-.markdown input[type="checkbox"]:hover {
-    border-color: var(--color-accent-primary);
-    transform: scale(1.05);
-}
-
-.markdown input[type="checkbox"]:checked+del,
-.markdown input[type="checkbox"]:checked+span {
-    color: var(--color-text-meta);
-    text-decoration-color: var(--color-text-meta);
-    opacity: 0.7;
-}
-
-.markdown li:has(input[type="checkbox"]:checked) {
-    opacity: 0.8;
 }
 
 /* Mermaid Diagram */
