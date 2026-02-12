@@ -203,8 +203,12 @@ async function processDocument(filename, rawContent) {
   });
 
   // Pre-process for CJK Bold boundaries (Standard CommonMark fails on **bold**word)
-  // We insert a Zero Width Space if a bold span is followed immediately by a word character
-  content = content.replace(/(\*\*|__)(.+?)\1(?=[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\w])/g, '$1$2$1\u200B');
+  // We manually convert **bold** and __bold__ to <strong> tags to bypass marked.js strictness
+  content = content.replace(/(\*\*|__)(?=\S)([\s\S]+?)(?<=\S)\1/g, (match, p1, p2) => {
+    // Avoid nested delimiters for simplicity in this pre-pass
+    if (p2.includes(p1)) return match;
+    return `<strong>${p2}</strong>`;
+  });
 
   let html = marked.parse(content);
 
