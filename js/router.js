@@ -1,10 +1,10 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=3500';
-import { createTagTicker } from './tag-ticker.js?v=3500';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=3500';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=3500';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=3500';
-import { initImageViewer } from './image-viewer.js?v=3500';
-import { initCodeUtils } from './code-utils.js?v=3500';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=3600';
+import { createTagTicker } from './tag-ticker.js?v=3600';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=3600';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=3600';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=3600';
+import { initImageViewer } from './image-viewer.js?v=3600';
+import { initCodeUtils } from './code-utils.js?v=3600';
 
 /**
  * Main navigation entry point
@@ -27,7 +27,7 @@ async function handleDashboardRoute() {
 
   // Set Loading State
   document.getElementById('app').innerHTML = '<div class="loading-container"><div class="spinner"></div><div class="loading-text">Loading Dashboard</div></div>';
-  document.title = 'Dashboard - ShareHub';
+  document.title = 'Dashboard - SharePage';
   console.log('[Router] Loading dashboard');
 
   try {
@@ -49,7 +49,7 @@ async function handleDocumentRoute(filename) {
 
   // Set Loading State
   document.getElementById('app').innerHTML = '<div class="loading-container"><div class="spinner"></div><div class="loading-text">Loading Content</div></div>';
-  document.title = `${filename} - ShareHub`;
+  document.title = `${filename} - SharePage`;
   console.log('[Router] Dynamic navigation to:', filename);
 
   try {
@@ -199,7 +199,7 @@ function renderDocumentView(title, tags, html, metadata) {
 
   // Update Head Tags
   if (metadata) {
-    document.title = `${metadata.title} - ShareHub`;
+    document.title = `${metadata.title} - SharePage`;
 
     // Helper to set meta tag
     const setMeta = (name, content, property = false) => {

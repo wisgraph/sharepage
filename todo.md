@@ -1,12 +1,12 @@
 # Todo List
 
-This is an example of a todo list note in ShareHub.
+This is an example of a todo list note in SharePage.
 
 ## Tasks
 
 ### Today
 
-- [x] Set up ShareHub
+- [x] Set up SharePage
 - [x] Create example notes
 - [ ] Review documentation
 - [ ] Test all features

@@ -1,14 +1,16 @@
 ---
-thumbnail: logo.png
+title: Welcome
+description: Welcome to **SharePage**!
+tags: [welcome, guide, sharepage]
 ---
 
-# Welcome to **ShareHub**!
+# Welcome to **SharePage**!
 
-This is a sample note to demonstrate ShareHub's markdown rendering capabilities.
+This is a sample note to demonstrate SharePage's markdown rendering capabilities.
 
-## What is ShareHub?
+## What is SharePage?
 
-ShareHub is a tool that allows you to share your Obsidian notes via GitHub Pages. It supports:
+SharePage is a tool that allows you to share your Obsidian notes via GitHub Pages. It supports:
 
 - **Markdown rendering** - Full markdown support with syntax highlighting
 - **Internal links** - Navigate between notes using `[[note]]` syntax
