@@ -1,5 +1,5 @@
-import { prefetchFile, BASE_PATH, IS_LOCAL } from '../utils.js?v=14000';
-import { navigate } from '../router.js?v=14000';
+import { prefetchFile, BASE_PATH, IS_LOCAL } from '../utils.js?v=15000';
+import { navigate } from '../router.js?v=15000';
 
 const PREMIUM_GRADIENTS = [
   'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -131,4 +131,38 @@ export function renderSectionedDashboard(sections) {
       </section>
     `;
   }).join('');
+}
+export function renderDashboardControls(allTags, activeTags, searchQuery) {
+  const activeTagsSet = new Set(activeTags);
+
+  const tagsHtml = allTags.map(tag => {
+    const isActive = activeTagsSet.has(tag);
+    return `
+      <button 
+        class="dashboard-tag-filter ${isActive ? 'active' : ''}" 
+        onclick="onDashboardTagToggle('${tag}')">
+        #${tag}
+      </button>
+    `;
+  }).join('');
+
+  return `
+    <div class="dashboard-controls">
+      <div class="dashboard-search-container">
+        <input 
+          type="text" 
+          class="dashboard-search-input" 
+          placeholder="Search notes..." 
+          value="${searchQuery}"
+          oninput="onDashboardSearch(this.value)"
+        />
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 21L15.0001 15.0001M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="dashboard-tags-container">
+        ${tagsHtml}
+      </div>
+    </div>
+  `;
 }

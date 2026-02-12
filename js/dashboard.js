@@ -1,6 +1,6 @@
-import { fetchFile } from './utils.js?v=14000';
-import { loadSectionedDashboard } from './dashboard/dashboardDataExtractor.js?v=14000';
-import { renderSectionedDashboard } from './dashboard/dashboardCardRenderer.js?v=14000';
+import { fetchFile } from './utils.js?v=15000';
+import { loadSectionedDashboard } from './dashboard/dashboardDataExtractor.js?v=15000';
+import { renderSectionedDashboard, renderDashboardControls } from './dashboard/dashboardCardRenderer.js?v=15000';
 
 let dashboardState = {
   dashboardContent: '',
@@ -39,11 +39,124 @@ export async function renderDashboardPage() {
     return '<div class="loading">No notes linked in _dashboard.md yet.</div>';
   }
 
-  const sectionsHtml = renderSectionedDashboard(sections);
+  /* Extract all unique tags */
+  const allTags = new Set();
+  sections.forEach(section => {
+    section.notes.forEach(note => {
+      if (note.tags) note.tags.forEach(t => allTags.add(t));
+    });
+  });
+
+  // Update State
+  dashboardState.sections = sections;
+  dashboardState.allTags = Array.from(allTags).sort();
+  dashboardState.activeTags = [];
+  dashboardState.searchQuery = '';
+
+  return renderFullDashboard();
+}
+
+function filterSections(sections, query, activeTags) {
+  if (!query && activeTags.length === 0) return sections;
+
+  const lowerQuery = query.toLowerCase();
+  const activeTagsSet = new Set(activeTags);
+
+  return sections.map(section => {
+    const filteredNotes = section.notes.filter(note => {
+      // 1. Search Query Filter
+      const matchesQuery = !query ||
+        note.title.toLowerCase().includes(lowerQuery) ||
+        (note.description && note.description.toLowerCase().includes(lowerQuery));
+
+      if (!matchesQuery) return false;
+
+      // 2. Tag Filter (OR Logic)
+      if (activeTags.length > 0) {
+        if (!note.tags || note.tags.length === 0) return false;
+        // Check if note has ANY of the active tags
+        const hasTag = note.tags.some(tag => activeTagsSet.has(tag));
+        if (!hasTag) return false;
+      }
+
+      return true;
+    });
+
+    return {
+      ...section,
+      notes: filteredNotes,
+      count: filteredNotes.length
+    };
+  }).filter(section => section.notes.length > 0);
+}
+
+function renderFullDashboard() {
+  const filteredSections = filterSections(
+    dashboardState.sections,
+    dashboardState.searchQuery,
+    dashboardState.activeTags
+  );
+
+  const controlsHtml = renderDashboardControls(
+    dashboardState.allTags,
+    dashboardState.activeTags,
+    dashboardState.searchQuery
+  );
+
+  if (filteredSections.length === 0) {
+    return `
+      ${controlsHtml}
+      <div class="empty-state">
+        <p>No notes found matching your criteria.</p>
+      </div>
+    `;
+  }
+
+  const sectionsHtml = renderSectionedDashboard(filteredSections);
 
   console.log('[Dashboard] Rendering sectioned dashboard END');
-  return sectionsHtml;
+  return `
+    ${controlsHtml}
+    ${sectionsHtml}
+  `;
 }
+
+// Global Event Handlers
+window.onDashboardSearch = (value) => {
+  dashboardState.searchQuery = value;
+  const app = document.getElementById('app');
+  // Re-render only if app is present (it should be)
+  if (app) {
+    // We need to re-render efficiently. Ideally VDOM, but innerHTML is fine for now.
+    // However, re-rendering the whole page causes input focus loss.
+    // Let's just re-render content area if possible, or restore focus.
+
+    // Simple approach: Re-render everything and restore focus
+    app.innerHTML = renderFullDashboard();
+
+    // Restore focus
+    const input = document.querySelector('.dashboard-search-input');
+    if (input) {
+      input.focus();
+      // Move cursor to end
+      const val = input.value;
+      input.value = '';
+      input.value = val;
+    }
+  }
+};
+
+window.onDashboardTagToggle = (tag) => {
+  const index = dashboardState.activeTags.indexOf(tag);
+  if (index === -1) {
+    dashboardState.activeTags.push(tag);
+  } else {
+    dashboardState.activeTags.splice(index, 1);
+  }
+
+  const app = document.getElementById('app');
+  if (app) app.innerHTML = renderFullDashboard();
+};
 
 // Redirect goToPage to a no-op if called (pagination removed for sectioned view)
 export async function goToPage(page) {

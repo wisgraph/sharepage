@@ -1,4 +1,4 @@
-import { fetchFile, getRawUrl, transformObsidianImageLinks, parseFrontmatter } from '../utils.js?v=14000';
+import { fetchFile, getRawUrl, transformObsidianImageLinks, parseFrontmatter } from '../utils.js?v=15000';
 
 /**
  * Extracts links grouped by sections based on ## Headings
