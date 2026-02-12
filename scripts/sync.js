@@ -141,7 +141,14 @@ function generateStaticHtml(template, mdFilename) {
         fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    fs.writeFileSync(path.join(outputDir, 'index.html'), html);
+    // Fix relative paths for resources since we are one level deep
+    let subHtml = html;
+    subHtml = subHtml.replace(/href="css\//g, 'href="../css/');
+    subHtml = subHtml.replace(/src="js\//g, 'src="../js/');
+    subHtml = subHtml.replace(/href="images\//g, 'href="../images/');
+    subHtml = subHtml.replace(/src="images\//g, 'src="../images/');
+
+    fs.writeFileSync(path.join(outputDir, 'index.html'), subHtml);
     console.log(`[Sync] Generated: ${dirName}/index.html`);
 }
 
