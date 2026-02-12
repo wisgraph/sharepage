@@ -1,4 +1,5 @@
-import { prefetchFile } from '../utils.js?v=5000';
+import { prefetchFile, BASE_PATH, IS_LOCAL } from '../utils.js?v=5000';
+import { navigate } from '../router.js?v=5000';
 
 export function renderNoteThumbnail(note) {
   if (note.thumbnail) {
@@ -45,8 +46,6 @@ window.prefetchNote = (file) => {
   prefetchFile(file);
 };
 
-import { navigate } from '../router.js?v=5000';
-
 window.handleCardClick = (path, el) => {
   // Add a quick feedback class
   el.classList.add('is-active');
@@ -59,11 +58,7 @@ window.handleCardClick = (path, el) => {
   if (title) title.style.viewTransitionName = 'active-note-expand';
 
   const navigateTo = () => {
-    const IS_LOCAL = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-    const parts = window.location.pathname.split('/');
-    const BASE_PATH = IS_LOCAL ? '' : (parts[1] ? '/' + parts[1] : '');
-
-    const finalPath = BASE_PATH + (path.startsWith('/') ? '' : '/') + path;
+    const finalPath = (BASE_PATH || '') + (path.startsWith('/') ? '' : '/') + path;
 
     history.pushState(null, '', finalPath);
     navigate(finalPath);

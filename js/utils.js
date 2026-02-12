@@ -1,5 +1,11 @@
-
 export const IS_LOCAL = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+export const BASE_PATH = (() => {
+  if (IS_LOCAL) return '';
+  const parts = window.location.pathname.split('/');
+  // On github.io, parts[1] is the repo name.
+  const path = '/' + parts[1];
+  return (path === '/' || path === '/404.html') ? '' : path;
+})();
 export const PAGINATION_ITEMS_PER_PAGE = 9;
 
 export function getRawUrl(filename) {
@@ -57,13 +63,10 @@ export function prefetchFile(filename) {
 }
 
 export function transformInternalLinks(html) {
-  const BASE_PATH = IS_LOCAL ? '' : '/' + window.location.pathname.split('/')[1];
-  const finalBase = BASE_PATH === '/' ? '' : BASE_PATH;
-
   return html.replace(
     /\[\[(.*?)\]\]/g,
     (match, filename) => {
-      const path = finalBase + '/' + filename.replace(/\.md$/, '');
+      const path = (BASE_PATH || '') + '/' + filename.replace(/\.md$/, '');
       return `<a href="${path}" class="internal-link">${filename}</a>`;
     }
   );

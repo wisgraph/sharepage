@@ -1,4 +1,4 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=5000';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL } from './utils.js?v=5000';
 import { createTagTicker } from './tag-ticker.js?v=5000';
 import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=5000';
 import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=5000';
@@ -6,18 +6,6 @@ import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } fr
 import { initImageViewer } from './image-viewer.js?v=5000';
 import { initCodeUtils } from './code-utils.js?v=5000';
 import { initLinkPreviews } from './preview.js?v=5000';
-
-const IS_LOCAL = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-// Dynamically determine the base path (e.g., /sharepage or empty)
-const BASE_PATH = (() => {
-  if (IS_LOCAL) return '';
-  const parts = window.location.pathname.split('/');
-  // If it's github.io/repo/, parts[1] is the repo name. 
-  // If it's a custom domain, parts[1] might be empty or part of a path.
-  // For GitHub Pages repo hosting, this is usually index 1.
-  const path = '/' + parts[1];
-  return path === '/' ? '' : path;
-})();
 
 /**
  * Main navigation entry point
@@ -32,7 +20,13 @@ export async function navigate(rawPath) {
     path = path.slice(BASE_PATH.length);
   }
 
+  // Ensure path starts with /
   if (!path.startsWith('/')) path = '/' + path;
+
+  // Strip trailing slashes for consistency
+  if (path.length > 1 && path.endsWith('/')) {
+    path = path.slice(0, -1);
+  }
 
   let normalizedPath = path;
   if (normalizedPath.endsWith('.html')) {
@@ -42,8 +36,8 @@ export async function navigate(rawPath) {
   if (normalizedPath === '' || normalizedPath === '/') {
     await handleDashboardRoute();
   } else {
-    // Strip leading slash
-    const filename = decodeURIComponent(normalizedPath.startsWith('/') ? normalizedPath.slice(1) : normalizedPath);
+    // Strip leading slash to get filename
+    const filename = decodeURIComponent(normalizedPath.slice(1));
     await handleDocumentRoute(filename);
   }
 }
@@ -345,7 +339,7 @@ function renderError(resourceName, error) {
       <p>The document "<strong>${resourceName}</strong>" could not be loaded.</p>
       <br/>
       <p class="error-detail">${error.message}</p>
-      <a href="/" class="back-button">Go to Dashboard</a>
+      <a href="${BASE_PATH || '/'}" class="back-button">Go to Dashboard</a>
     </div>
     `;
 }
