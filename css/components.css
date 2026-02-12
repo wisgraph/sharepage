@@ -6,7 +6,8 @@
   gap: 0;
   margin-top: var(--space-6);
   border: none;
-  padding: 3px 0 0 3px;
+  /* Increase padding to ensure borders are not clipped on any side */
+  padding: 6px;
   max-width: 100%;
 }
 

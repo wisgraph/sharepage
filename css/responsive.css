@@ -126,3 +126,17 @@
     display: none;
   }
 }
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+
+  /* Disable card scaling on mobile to prevent border clipping */
+  .note-card:hover {
+    transform: none;
+    /* Scale causes overflow clipping on narrow screens */
+    z-index: 10;
+    /* Still bring to front */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* Reduced shadow */
+  }
+}
