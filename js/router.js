@@ -1,10 +1,10 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=3400';
-import { createTagTicker } from './tag-ticker.js?v=3400';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=3400';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=3400';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=3400';
-import { initImageViewer } from './image-viewer.js?v=3400';
-import { initCodeUtils } from './code-utils.js?v=3400';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=3500';
+import { createTagTicker } from './tag-ticker.js?v=3500';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=3500';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=3500';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=3500';
+import { initImageViewer } from './image-viewer.js?v=3500';
+import { initCodeUtils } from './code-utils.js?v=3500';
 
 /**
  * Main navigation entry point
@@ -127,7 +127,7 @@ async function processDocument(filename, rawContent) {
   html = transformInternalLinks(html);
 
   // Extract Metadata for Head Tags
-  let description = data.description || '';
+  let description = data.description || data.summary || data.excerpt || '';
   if (!description) {
     // Extract first paragraph as description form raw content, removing markdown syntax
     const plainText = content.replace(/[#*`_\[\]]/g, '').trim();

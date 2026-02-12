@@ -139,7 +139,11 @@ export function parseFrontmatter(markdown) {
           // Case 3: Empty value, implying subsequent lines have the list (handled in next iterations)
         } else {
           // Normal key-value
-          result.data[key] = value;
+          let cleanValue = value;
+          if ((cleanValue.startsWith('"') && cleanValue.endsWith('"')) || (cleanValue.startsWith("'") && cleanValue.endsWith("'"))) {
+            cleanValue = cleanValue.slice(1, -1);
+          }
+          result.data[key] = cleanValue;
         }
       }
     });
