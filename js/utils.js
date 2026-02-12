@@ -26,8 +26,9 @@ export function getRawUrl(filename) {
   // If the filename already looks like a URL, return it
   if (filename.startsWith('http')) return filename;
 
-  // For standard files, use relative path from the root
-  return `./${filename}`;
+  // Encode filename to handle spaces and special characters (like Korean characters)
+  const encodedFilename = encodeURIComponent(filename);
+  return `./${encodedFilename}`;
 }
 
 export async function fetchFile(filename) {
