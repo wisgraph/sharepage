@@ -1,0 +1,26 @@
+:root {
+  /* Color DNA */
+  --color-surface-base: #ffffff;
+  --color-surface-muted: #f4f4f4;
+  --color-text-primary: #000000;
+  --color-text-body: #333333;
+  --color-text-meta: #666666;
+  --color-border-strong: #000000;
+  --color-border-default: #e5e7eb;
+  --color-icon-bg: #000000;
+  --color-accent-primary: #3b82f6;
+  --color-accent-hover: #2563eb;
+}
+
+body.theme-dark {
+  --color-surface-base: #0d1117;
+  --color-surface-muted: #21262d;
+  --color-text-primary: #e6edf3;
+  --color-text-body: #c9d1d9;
+  --color-text-meta: #8b949e;
+  --color-border-strong: #30363d;
+  --color-border-default: #161b22;
+  --color-icon-bg: #ffffff;
+  --color-accent-primary: #58a6ff;
+  --color-accent-hover: #79b8ff;
+}

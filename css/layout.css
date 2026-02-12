@@ -5,100 +5,79 @@
   left: 0;
   right: 0;
   height: 60px;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid #e5e7eb;
+  background-color: var(--color-surface-base);
+  border-bottom: 2px solid var(--color-border-strong);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 var(--space-3);
   z-index: 1000;
-}
-
-body.theme-dark .navbar {
-  background-color: rgba(13, 17, 23, 0.95);
-  border-bottom-color: #30363d;
 }
 
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-2);
 }
 
 .navbar-logo {
-  font-size: 20px;
+  font-size: var(--text-heading-2);
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text-primary);
   text-decoration: none;
-}
-
-body.theme-dark .navbar-logo {
-  color: #e6edf3;
+  letter-spacing: -0.01em;
 }
 
 .navbar-home {
-  padding: 8px 16px;
-  background-color: #f3f4f6;
-  color: #374151;
+  padding: 8px var(--space-2);
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-body);
   text-decoration: none;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: var(--radius-none);
+  font-size: var(--text-heading-4);
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition: opacity 0.2s;
 }
 
 .navbar-home:hover {
-  background-color: #e5e7eb;
-}
-
-body.theme-dark .navbar-home {
-  background-color: #21262d;
-  color: #e6edf3;
-}
-
-body.theme-dark .navbar-home:hover {
-  background-color: #30363d;
+  opacity: 0.8;
 }
 
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-1);
 }
 
 .theme-toggle {
-  padding: 8px;
+  padding: var(--space-1);
   background: transparent;
-  border: none;
+  border: 2px solid var(--color-border-strong);
   cursor: pointer;
-  border-radius: 6px;
-  color: #6b7280;
+  border-radius: var(--radius-none);
+  color: var(--color-text-meta);
   transition: color 0.2s;
 }
 
 .theme-toggle:hover {
-  color: #111827;
-}
-
-body.theme-dark .theme-toggle:hover {
-  color: #e6edf3;
+  color: var(--color-text-primary);
 }
 
 /* Main Layout */
 .main-layout {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
   margin-top: 80px;
-  padding: 0 24px 40px;
-  gap: 40px;
+  padding: 0 var(--space-3) var(--space-6);
+  gap: var(--space-4);
 }
 
 .content-wrapper {
-  flex: 1;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 .main-content {
   max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
 }

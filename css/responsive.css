@@ -1,14 +1,14 @@
 /* Responsive */
 @media (max-width: 768px) {
   .navbar {
-    padding: 0 16px;
+    padding: 0 var(--space-2);
   }
 
   .main-layout {
-    flex-direction: column;
-    padding: 0 16px 32px;
+    grid-template-columns: 1fr;
+    padding: 0 var(--space-2) var(--space-5);
     margin-top: 70px;
-    gap: 20px;
+    gap: var(--space-3);
   }
 
   .content-wrapper {
@@ -20,7 +20,7 @@
   }
 
   .document-container {
-    padding: 24px;
+    padding: var(--space-4);
   }
 
   .dashboard-grid {
@@ -33,18 +33,13 @@
     top: 60px;
     bottom: 0;
     width: 280px;
-    background-color: rgba(255, 255, 255, 0.98);
+    background-color: rgba(255,255,255, 0.98);
     backdrop-filter: blur(10px);
-    border-left: 1px solid #e5e7eb;
+    border-left: 1px solid var(--color-border-default);
     transform: translateX(100%);
     transition: transform 0.3s;
     z-index: 900;
-    padding: 16px;
-  }
-
-  body.theme-dark .toc-sidebar {
-    background-color: rgba(13, 17, 23, 0.98);
-    border-left-color: #30363d;
+    padding: var(--space-3);
   }
 
   .toc-sidebar.open {

@@ -1,0 +1,21 @@
+{
+  "name": "sharehub",
+  "version": "1.0.0",
+  "description": "GitHub Pages based Obsidian document renderer",
+  "scripts": {
+    "build:css": "cat css/{vars,vars-tokens,base,layout,components,content,toc,responsive}.css > css/bundle.css",
+    "build:css:watch": "onchange 'css/*.css' -- npm run build:css",
+    "dev": "npm run build:css:watch"
+  },
+  "keywords": [
+    "obsidian",
+    "github-pages",
+    "markdown",
+    "design-system"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "onchange": "^7.1.0"
+  }
+}
