@@ -83,56 +83,72 @@ export function renderMermaidDiagrams(html) {
   const doc = parser.parseFromString(html, 'text/html');
 
   // Obsidian style often results in language-mermaid
-  const mermaidBlocks = doc.querySelectorAll('pre code.language-mermaid, code.language-mermaid');
+  // Also scan for generic code blocks that look like mermaid but missed the tag
+  const allCodeBlocks = doc.querySelectorAll('pre code');
 
-  mermaidBlocks.forEach((block) => {
-    let code = block.textContent.trim();
-    let width = null;
-    let height = null;
+  allCodeBlocks.forEach((block) => {
+    const code = block.textContent.trim();
+    const isMermaidClass = block.classList.contains('language-mermaid') ||
+      (block.className && block.className.includes('mermaid'));
 
-    // Check for dimension format in the first line:
-    // "300" -> width: 300px
-    // ",300" -> height: 300px
-    // "300,200" -> width: 300px, height: 200px
-    const lines = code.split('\n');
-    if (lines.length > 0) {
-      const firstLine = lines[0].trim();
-      const dimMatch = firstLine.match(/^(\d+)?(?:,(\d+))?$/);
+    // Heuristic for untagged mermaid blocks
+    const mermaidKeywords = ['graph', 'flowchart', 'sequenceDiagram', 'classDiagram', 'stateDiagram',
+      'stateDiagram-v2', 'erDiagram', 'gantt', 'pie', 'journey', 'gitGraph',
+      'mindmap', 'timeline', 'quadrantChart', 'requirementDiagram', 'c4Context'];
 
-      if (dimMatch && (dimMatch[1] || dimMatch[2])) {
-        // It's a dimension line!
-        if (dimMatch[1]) width = dimMatch[1];
-        if (dimMatch[2]) height = dimMatch[2];
+    // Check first word of code
+    const firstWord = code.split(/\s+/)[0];
+    const isMermaidContent = mermaidKeywords.includes(firstWord);
 
-        // Remove the dimension line from the code
-        code = lines.slice(1).join('\n').trim();
+    if (isMermaidClass || isMermaidContent) {
+      let finalCode = code;
+      let width = null;
+      let height = null;
+
+      // Check for dimension format in the first line:
+      // "300" -> width: 300px
+      // ",300" -> height: 300px
+      // "300,200" -> width: 300px, height: 200px
+      const lines = finalCode.split('\n');
+      if (lines.length > 0) {
+        const firstLine = lines[0].trim();
+        const dimMatch = firstLine.match(/^(\d+)?(?:,(\d+))?$/);
+
+        if (dimMatch && (dimMatch[1] || dimMatch[2])) {
+          // It's a dimension line!
+          if (dimMatch[1]) width = dimMatch[1];
+          if (dimMatch[2]) height = dimMatch[2];
+
+          // Remove the dimension line from the code
+          finalCode = lines.slice(1).join('\n').trim();
+        }
       }
+
+      const container = document.createElement('div');
+      container.className = 'mermaid';
+
+      // Apply dimensions if found
+      if (width) container.style.width = width + 'px';
+      if (height) container.style.height = height + 'px';
+
+      // Preserve aspect ratio if only one dimension is set, or center it
+      if (width || height) {
+        container.style.maxWidth = '100%';
+        container.style.marginLeft = 'auto';
+        container.style.marginRight = 'auto';
+      }
+
+      container.setAttribute('data-code', finalCode); // Store original code for copy function
+      container.textContent = finalCode;
+
+      // Replace the whole pre or code block
+      // If inside a <pre>, replace the parent <pre>. Otherwise just the <code>.
+      const target = (block.parentElement && block.parentElement.tagName.toLowerCase() === 'pre')
+        ? block.parentElement
+        : block;
+
+      target.replaceWith(container);
     }
-
-    const container = document.createElement('div');
-    container.className = 'mermaid';
-
-    // Apply dimensions if found
-    if (width) container.style.width = width + 'px';
-    if (height) container.style.height = height + 'px';
-
-    // Preserve aspect ratio if only one dimension is set, or center it
-    if (width || height) {
-      container.style.maxWidth = '100%';
-      container.style.marginLeft = 'auto';
-      container.style.marginRight = 'auto';
-    }
-
-    container.setAttribute('data-code', code); // Store original code for copy function
-    container.textContent = code;
-
-    // Replace the whole pre or code block
-    // If inside a <pre>, replace the parent <pre>. Otherwise just the <code>.
-    const target = (block.parentElement && block.parentElement.tagName.toLowerCase() === 'pre')
-      ? block.parentElement
-      : block;
-
-    target.replaceWith(container);
   });
 
   return doc.body.innerHTML;
