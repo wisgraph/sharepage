@@ -1,20 +1,22 @@
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive - Increased breakpoint to 1200px for vertical monitors */
+@media (max-width: 1200px) {
   .navbar {
     padding: 0 var(--space-2);
   }
 
   .main-layout {
     display: block;
-    /* Simpler than flex for mobile stacked layout */
     padding: 0 var(--space-3) var(--space-5);
     margin-top: 70px;
+    width: 100%;
+    max-width: 100vw;
   }
 
   .content-wrapper {
     width: 100%;
+    max-width: 100%;
+    margin: 0;
     overflow-x: hidden;
-    /* Prevent horizontal scroll from any stray elements */
   }
 
   .main-content {
@@ -23,7 +25,7 @@
 
   .document-container {
     padding: var(--space-4) 0;
-    /* Reduced horizontal padding */
+    width: 100%;
   }
 
   .dashboard-grid {
@@ -49,19 +51,19 @@
   }
 
   .theme-dark .toc-sidebar {
-    background-color: rgba(13, 17, 23, 0.8);
-    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.3);
+    background-color: rgba(13, 17, 23, 0.82);
+    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
   }
 
   /* Overlay backdrop when TOC is open */
-  .toc-sidebar.visible.open::before {
+  .toc-sidebar.open::before {
     content: '';
     position: fixed;
     top: 0;
     left: -100vw;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(4px);
     display: block;
     z-index: -1;
@@ -73,10 +75,9 @@
   }
 
   .toc-link {
-    padding: 6px 0;
-    /* Reduced spacing */
+    padding: 8px 0;
     font-size: 15px;
-    line-height: 1.3;
+    line-height: 1.4;
   }
 
   .toc-link.level-2 {
@@ -94,18 +95,19 @@
     z-index: 100;
     margin-bottom: var(--space-3);
     background: var(--color-surface-muted);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border: 1px solid var(--color-border-default);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
-  /* Fix for heading labels on very small screens */
+  /* Fix for heading labels on narrow screens */
   .markdown h1,
   .markdown h2,
   .markdown h3,
   .markdown h4 {
-    padding-left: 38px !important;
+    padding-left: 42px !important;
+    word-break: break-word;
   }
 
   .markdown h1::before,
@@ -115,10 +117,10 @@
     left: 0 !important;
     font-size: 10px;
     padding: 2px 4px;
+    transform: translateY(-50%);
   }
 
   .heading-anchor {
     display: none;
-    /* Hide anchors on mobile to save space */
   }
 }

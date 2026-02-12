@@ -12,4 +12,7 @@ body {
   color: var(--color-text-body);
   line-height: var(--line-height-relaxed);
   font-size: var(--text-body-1);
+  overflow-x: hidden;
+  /* Prevent horizontal scroll globally */
+  width: 100%;
 }
