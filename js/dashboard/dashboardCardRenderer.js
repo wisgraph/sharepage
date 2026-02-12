@@ -1,5 +1,5 @@
-import { prefetchFile, BASE_PATH, IS_LOCAL } from '../utils.js?v=16000';
-import { navigate } from '../router.js?v=16000';
+import { prefetchFile, BASE_PATH, IS_LOCAL } from '../utils.js?v=17000';
+import { navigate } from '../router.js?v=17000';
 
 const PREMIUM_GRADIENTS = [
   'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -44,7 +44,12 @@ export function renderNoteCard(note) {
 
   const tagsHtml = note.tags && note.tags.length > 0
     ? `<div class="note-card-tags">
-        ${note.tags.map(tag => `<span class="note-card-tag-pill">#${tag}</span>`).join('')}
+        ${note.tags.map(tag => `
+          <button 
+            class="note-card-tag-pill" 
+            onclick="event.stopPropagation(); onDashboardTagToggle('${tag}')"
+          >#${tag}</button>
+        `).join('')}
        </div>`
     : '';
 
