@@ -1,4 +1,4 @@
-import { fetchFile, getRawUrl, transformObsidianImageLinks, parseFrontmatter } from '../utils.js?v=20000';
+import { fetchFile, getRawUrl, transformObsidianImageLinks, parseFrontmatter } from '../utils.js?v=21000';
 
 /**
  * Extracts links grouped by sections based on ## Headings
@@ -232,11 +232,14 @@ export async function loadSectionedDashboard(dashboardContent) {
     // Actually, getRawUrl handles .json safely? line 16 check says !targetFile.includes('.')
 
     // We need to fetch 'posts/file_index.json' relative to root.
-    // But fetchFile logic prepends notes/ if not extension... wait.
-    // Let's use a direct fetch here for simplicity and safety against utils.js logic changes.
-    // Or better, let's use the known path structure.
+    // In local serve (npx serve ./), root is the current directory.
+    // In GitHub Pages with project path, we need relative or absolute path handling.
 
-    const indexUrl = (IS_LOCAL ? '' : '.') + '/posts/file_index.json?v=' + Date.now(); // Cache bust
+    // IS_LOCAL is boolean.
+    // If IS_LOCAL, we are at root /. So /posts/file_index.json is correct.
+    // If NOT IS_LOCAL, we are at /sharepage/. So ./posts/file_index.json is safer.
+
+    const indexUrl = './posts/file_index.json?v=' + Date.now();
     const response = await fetch(indexUrl);
 
     if (response.ok) {
