@@ -1,4 +1,4 @@
-import { fetchFile, getRawUrl, transformObsidianImageLinks, parseFrontmatter } from '../utils.js?v=35000';
+import { fetchFile, getRawUrl, transformObsidianImageLinks, parseFrontmatter } from '../utils.js?v=36000';
 
 /**
  * Extracts links grouped by sections based on ## Headings
@@ -131,7 +131,7 @@ export async function extractNoteFromLink(link) {
   console.log('[Dashboard] Processing link:', link);
 
   const filename = link.endsWith('.md') ? link : link + '.md';
-  const path = '/' + link.toLowerCase().replace(/\s+/g, '-').replace(/\.md$/, '');
+  const path = '/posts/' + link.toLowerCase().replace(/\s+/g, '-').replace(/\.md$/, '');
 
   const note = {
     path: path, // This path is used for navigation (#/filename)
@@ -153,7 +153,7 @@ export async function extractNoteFromLink(link) {
       description: metadata.description,
       thumbnail: thumbnail,
       tags: metadata.tags || [],
-      path: '/' + note.file.replace(/\.md$/, '') // Ensure path is consistent with catch-all router
+      path: '/posts/' + note.file.replace(/\.md$/, '') // Ensure path is consistent with posts/ router
     };
 
     console.log('[Dashboard] Note extracted:', enrichedNote.title);
