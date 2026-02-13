@@ -1,7 +1,7 @@
-import { fetchFile } from './utils.js?v=38000';
-import { loadSectionedDashboard } from './dashboard/dashboardDataExtractor.js?v=38000';
-import { renderSectionedDashboard, renderDashboardControls } from './dashboard/dashboardCardRenderer.js?v=38000';
-import { initDashboardAnimations } from './animations.js?v=38000';
+import { fetchFile } from './utils.js?v=39000';
+import { loadSectionedDashboard } from './dashboard/dashboardDataExtractor.js?v=39000';
+import { renderSectionedDashboard, renderDashboardControls } from './dashboard/dashboardCardRenderer.js?v=39000';
+import { initDashboardAnimations } from './animations.js?v=39000';
 
 let dashboardState = {
   dashboardContent: '',

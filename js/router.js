@@ -1,13 +1,13 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL, parseNotePath, getNotePath } from './utils.js?v=38000';
-import { createTagTicker } from './tag-ticker.js?v=38000';
-import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=38000';
-import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=38000';
-import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=38000';
-import { initImageViewer } from './image-viewer.js?v=38000';
-import { initCodeUtils } from './code-utils.js?v=38000';
-import { initLinkPreviews } from './preview.js?v=38000';
-import { transformCallouts } from './callouts.js?v=38000';
-import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations, cleanupDashboardAnimations } from './animations.js?v=38000';
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL, parseNotePath, getNotePath } from './utils.js?v=39000';
+import { createTagTicker } from './tag-ticker.js?v=39000';
+import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=39000';
+import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=39000';
+import { addHeadingIds, renderTOC, initScrollHighlight, stopScrollHighlight } from './toc.js?v=39000';
+import { initImageViewer } from './image-viewer.js?v=39000';
+import { initCodeUtils } from './code-utils.js?v=39000';
+import { initLinkPreviews } from './preview.js?v=39000';
+import { transformCallouts } from './callouts.js?v=39000';
+import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations, cleanupDashboardAnimations } from './animations.js?v=39000';
 
 /**
  * Main navigation entry point
@@ -48,7 +48,10 @@ export async function navigate(rawPath) {
       // Legacy path detected (/welcome instead of /posts/welcome)
       // Redirect to new path structure
       const filename = decodeURIComponent(normalizedPath.slice(1));
-      const newPath = getNotePath(filename);
+
+      // Construct new path manually to avoid BASE_PATH duplication
+      // normalizedPath already includes BASE_PATH if present
+      const newPath = (BASE_PATH || '') + '/posts/' + filename;
 
       console.log(`[Router] Redirecting legacy path ${normalizedPath} to ${newPath}`);
 
