@@ -1,13 +1,16 @@
 // Migrated to use new layered modules
 import { fetchFile } from './core/fileApi.js?v=40000';
+import {
+  setDashboardContent,
+  getDashboardContent,
+  setDashboardSections,
+  getDashboardSections,
+  getSearchQuery,
+  getActiveTags
+} from './state/appState.js?v=40000';
 import { loadSectionedDashboard } from './dashboard/dashboardDataExtractor.js?v=40000';
 import { renderSectionedDashboard, renderDashboardControls } from './dashboard/dashboardCardRenderer.js?v=40000';
 import { initDashboardAnimations } from './animations.js?v=40000';
-
-let dashboardState = {
-  dashboardContent: '',
-  sections: []
-};
 
 export async function loadDashboardNotes() {
   console.log('[Dashboard] Initializing dashboard content...');
@@ -15,11 +18,11 @@ export async function loadDashboardNotes() {
   try {
     // Renamed from _home.md to _dashboard.md
     const content = await fetchFile('_dashboard.md');
-    dashboardState.dashboardContent = content;
+    setDashboardContent(content);
     console.log('[Dashboard] _dashboard.md loaded');
   } catch (error) {
     console.error('[Dashboard] Error loading _dashboard.md:', error);
-    dashboardState.dashboardContent = '';
+    setDashboardContent('');
   }
 }
 
@@ -29,12 +32,13 @@ export async function loadDashboardNotes() {
 export async function renderDashboardPage() {
   console.log('[Dashboard] Rendering sectioned dashboard START');
 
-  if (!dashboardState.dashboardContent) {
+  const dashboardContent = getDashboardContent();
+  if (!dashboardContent) {
     return '<div class="loading">No content found in _dashboard.md. Please create it to organize your notes.</div>';
   }
 
   // Load all notes grouped by sections
-  const sections = await loadSectionedDashboard(dashboardState.dashboardContent);
+  const sections = await loadSectionedDashboard(dashboardContent);
 
   if (sections.length === 0) {
     console.log('[Dashboard] No sections/links found');
@@ -50,10 +54,7 @@ export async function renderDashboardPage() {
   });
 
   // Update State
-  dashboardState.sections = sections;
-  dashboardState.allTags = Array.from(allTags).sort();
-  dashboardState.activeTags = [];
-  dashboardState.searchQuery = '';
+  setDashboardSections(sections);
 
   return renderFullDashboard();
 }
@@ -94,9 +95,9 @@ function filterSections(sections, query, activeTags) {
 
 function renderFullDashboard() {
   const filteredSections = filterSections(
-    dashboardState.sections,
-    dashboardState.searchQuery,
-    dashboardState.activeTags
+    getDashboardSections(),
+    getSearchQuery(),
+    getActiveTags()
   );
 
   const controlsHtml = renderDashboardControls(
