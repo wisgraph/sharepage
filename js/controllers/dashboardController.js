@@ -12,9 +12,9 @@ import {
     removeActiveTag
 } from '../state/appState.js?v=41000';
 import { filterSections } from '../services/dashboardService.js?v=41000';
-import { renderSectionedDashboard } from '../dashboard/dashboardCardRenderer.js?v=41000';
+import { renderSectionedDashboard } from '../views/dashboardCardView.js?v=41000';
 import { renderFullDashboard } from '../views/dashboardView.js?v=41000';
-import { initDashboardAnimations } from '../animations.js?v=41000';
+import { initDashboardAnimations } from '../views/animations.js?v=41000';
 
 /**
  * Global Event Handlers for Dashboard

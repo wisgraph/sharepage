@@ -12,8 +12,8 @@ import {
     getActiveTags,
     getSearchQuery
 } from '../state/appState.js?v=41000';
-import { loadSectionedDashboard } from '../dashboard/dashboardDataExtractor.js?v=41000';
-import { renderSectionedDashboard, renderDashboardControls } from '../dashboard/dashboardCardRenderer.js?v=41000';
+import { loadSectionedDashboard } from '../services/dashboardDataService.js?v=41000';
+import { renderSectionedDashboard, renderDashboardControls } from './dashboardCardView.js?v=41000';
 import { filterSections } from '../services/dashboardService.js?v=41000';
 
 /**

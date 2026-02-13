@@ -10,9 +10,8 @@ import { initImageViewer } from '../image-viewer.js?v=41000';
 import { initCodeUtils } from '../code-utils.js?v=41000';
 import { initLinkPreviews } from '../preview.js?v=41000';
 import { renderTOC, initScrollHighlight } from '../toc.js?v=41000';
-import { initScrollAnimations } from '../animations.js?v=41000';
+import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations } from '../views/animations.js?v=41000';
 import { loadDashboardNotes, renderDashboardPage } from '../dashboard.js?v=41000';
-import { initDashboardAnimations } from '../animations.js?v=41000';
 
 /**
  * Handles individual document route logic
