@@ -1,4 +1,6 @@
-import { prefetchFile, BASE_PATH, IS_LOCAL } from '../utils.js?v=40000';
+// Migrated to use new layered modules
+import { prefetchFile } from '../utils.js?v=40000';
+import { BASE_PATH, IS_LOCAL } from '../core/config.js?v=40000';
 import { navigate } from '../router.js?v=40000';
 
 const PREMIUM_GRADIENTS = [

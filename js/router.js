@@ -1,4 +1,7 @@
-import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl, BASE_PATH, IS_LOCAL, parseNotePath, getNotePath } from './utils.js?v=40000';
+// Migrated to use new layered modules
+import { fetchFile, transformObsidianImageLinks, transformInternalLinks, parseFrontmatter, getRawUrl } from './utils.js?v=40000';
+import { BASE_PATH, IS_LOCAL } from './core/config.js?v=40000';
+import { parseNotePath, getNotePath } from './services/pathService.js?v=40000';
 import { createTagTicker } from './tag-ticker.js?v=40000';
 import { applySyntaxHighlighting, renderMermaidDiagrams, protectMath, restoreMath, normalizeMermaidAliases, transformYouTubeLinks } from './renderer.js?v=40000';
 import { loadDashboardNotes, renderDashboardPage } from './dashboard.js?v=40000';
