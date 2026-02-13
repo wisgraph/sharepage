@@ -1,4 +1,5 @@
-import { fetchFile } from './utils.js?v=40000';
+// Migrated to use new layered modules
+import { fetchFile } from './core/fileApi.js?v=40000';
 import { loadSectionedDashboard } from './dashboard/dashboardDataExtractor.js?v=40000';
 import { renderSectionedDashboard, renderDashboardControls } from './dashboard/dashboardCardRenderer.js?v=40000';
 import { initDashboardAnimations } from './animations.js?v=40000';
