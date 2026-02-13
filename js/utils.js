@@ -96,13 +96,13 @@ export function transformInternalLinks(html) {
         const [page, heading] = linkTarget.split('#');
         const sluggifiedHeading = slugify(heading);
         const noteName = page.replace(/\.md$/, '');
-        const path = (BASE_PATH || '') + '/' + noteName;
+        const path = (BASE_PATH || '') + '/posts/' + noteName;
         const text = linkAlias || (page + ' > ' + heading);
         return `<a href="${path}#${sluggifiedHeading}" class="internal-link">${text}</a>`;
       } else {
         // Normal page link
         const noteName = linkTarget.replace(/\.md$/, '');
-        const path = (BASE_PATH || '') + '/' + noteName;
+        const path = (BASE_PATH || '') + '/posts/' + noteName;
         const text = linkAlias || noteName;
         return `<a href="${path}" class="internal-link">${text}</a>`;
       }
