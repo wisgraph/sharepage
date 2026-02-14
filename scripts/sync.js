@@ -6,6 +6,7 @@ const TEMPLATE_PATH = path.join(ROOT_DIR, 'index.html');
 const NOTES_DIR = path.join(ROOT_DIR, 'notes');
 const POSTS_DIR = path.join(ROOT_DIR, 'posts');
 const IMAGES_DIR = path.join(ROOT_DIR, 'images');
+const DOMAIN = 'https://wis-graph.github.io/sharepage';
 
 if (!fs.existsSync(POSTS_DIR)) fs.mkdirSync(POSTS_DIR);
 
@@ -35,7 +36,126 @@ function parseFrontmatter(content) {
 }
 
 /**
- * Generate Static HTML for a markdown file
+ * Clean and normalize text for metadata (description)
+ */
+function cleanMetadataText(text) {
+    if (!text) return '';
+    return text
+        .replace(/\*\*(.+?)\*\*/g, '$1')
+        .replace(/\*(.+?)\*/g, '$1')
+        .replace(/__(.+?)__/g, '$1')
+        .replace(/_(.+?)_/g, '$1')
+        .replace(/~~(.+?)~~/g, '$1')
+        .replace(/`(.+?)`/g, '$1')
+        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+        .replace(/[#*`_\[\]]/g, '')
+        .replace(/\n/g, ' ')
+        .trim();
+}
+
+/**
+ * Get description from frontmatter or body
+ */
+function extractDescription(data, body) {
+    let description = data.description || data.summary || '';
+    if (!description) {
+        description = cleanMetadataText(body).substring(0, 150) + '...';
+    } else {
+        description = cleanMetadataText(description);
+    }
+    return description;
+}
+
+/**
+ * Extract Open Graph image (Thumbnail)
+ */
+function extractOgImage(data, body) {
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+
+    // 1. Try from Frontmatter
+    let thumbnail = data.thumbnail || data.url || '';
+
+    // Filter out placeholder strings
+    const placeholders = ['(입력된 URL 없음)', '없음', '(없음)', 'n/a', 'none'];
+    if (thumbnail && placeholders.some(p => thumbnail.toLowerCase().includes(p.toLowerCase()))) {
+        thumbnail = '';
+    }
+
+    if (thumbnail) {
+        if (thumbnail.startsWith('[[') && thumbnail.endsWith(']]')) {
+            thumbnail = thumbnail.slice(2, -2);
+        }
+
+        const ytMatch = thumbnail.match(youtubeRegex);
+        if (ytMatch && ytMatch[1]) {
+            return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+        }
+        if (thumbnail.startsWith('http')) {
+            return thumbnail;
+        }
+        return `images/${thumbnail}`;
+    }
+
+    // 2. Try from Body (Images/Videos)
+    const contentCleaned = body.replace(/```[\s\S]*?```/g, '').replace(/`[^`]*`/g, '');
+    const imageMatch = contentCleaned.match(/!\[\[([^\]]+)\]\]/) || contentCleaned.match(/!\[.*?\]\((.*?)\)/);
+
+    if (imageMatch) {
+        const rawUrl = imageMatch[1];
+        const ytMatch = rawUrl.match(youtubeRegex);
+        if (ytMatch && ytMatch[1]) {
+            return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+        }
+        return rawUrl.startsWith('http') ? rawUrl : `images/${rawUrl}`;
+    }
+
+    // 3. Fallback for YouTube Source
+    if ((data.source_type || '').toLowerCase() === 'youtube') {
+        const anyYtMatch = body.match(youtubeRegex);
+        if (anyYtMatch && anyYtMatch[1]) {
+            return `https://img.youtube.com/vi/${anyYtMatch[1]}/maxresdefault.jpg`;
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Inject metatags and title into template
+ */
+function applyMetadataToTemplate(template, metadata) {
+    let html = template;
+    const { title, description, pageUrl, finalOgImage, isVideo } = metadata;
+
+    html = html.replace(/<title>.*?<\/title>/, `<title>${title} - SharePage</title>`);
+    html = html.replace(/<meta property="og:title" content=".*?">/, `<meta property="og:title" content="${title}">`);
+    html = html.replace(/<meta name="description" content=".*?">/, `<meta name="description" content="${description}">`);
+    html = html.replace(/<meta property="og:description" content=".*?">/, `<meta property="og:description" content="${description}">`);
+    html = html.replace(/<meta property="og:url" content=".*?">/, `<meta property="og:url" content="${pageUrl}">`);
+
+    if (finalOgImage) {
+        html = html.replace(/<meta property="og:image" content=".*?">/, `<meta property="og:image" content="${finalOgImage}">`);
+        if (isVideo) {
+            html = html.replace(/<meta property="og:type" content="website">/, `<meta property="og:type" content="video.other">`);
+        }
+    }
+
+    return html;
+}
+
+/**
+ * Fix relative paths for resources when the file is in posts/ subdir
+ */
+function fixResourcePaths(html) {
+    return html
+        .replace(/href="css\//g, 'href="../css/')
+        .replace(/src="js\//g, 'src="../js/')
+        .replace(/href="images\//g, 'href="../images/')
+        .replace(/src="images\//g, 'src="../images/');
+}
+
+/**
+ * Generate Static HTML for a single markdown file
  */
 function generateStaticHtml(template, mdFilename) {
     const fullPath = path.join(NOTES_DIR, mdFilename);
@@ -43,140 +163,37 @@ function generateStaticHtml(template, mdFilename) {
     const { data, body } = parseFrontmatter(content);
 
     const title = data.title || mdFilename.replace(/\.md$/, '');
-    let description = data.description || data.summary || '';
+    const description = extractDescription(data, body);
+    const ogImage = extractOgImage(data, body);
 
-    if (!description) {
-        // Extract first 150 chars from body, removing all markdown syntax
-        description = body
-            .replace(/\*\*(.+?)\*\*/g, '$1')  // Bold: **text** -> text
-            .replace(/\*(.+?)\*/g, '$1')      // Italic: *text* -> text
-            .replace(/__(.+?)__/g, '$1')      // Bold: __text__ -> text
-            .replace(/_(.+?)_/g, '$1')        // Italic: _text_ -> text
-            .replace(/~~(.+?)~~/g, '$1')      // Strikethrough: ~~text~~ -> text
-            .replace(/`(.+?)`/g, '$1')        // Inline code: `text` -> text
-            .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')  // Links: [text](url) -> text
-            .replace(/[#*`_\[\]]/g, '')       // Remove remaining markdown chars
-            .trim()
-            .substring(0, 150)
-            .replace(/\n/g, ' ') + '...';
-    } else {
-        // Also clean frontmatter description
-        description = description
-            .replace(/\*\*(.+?)\*\*/g, '$1')
-            .replace(/\*(.+?)\*/g, '$1')
-            .replace(/__(.+?)__/g, '$1')
-            .replace(/_(.+?)_/g, '$1')
-            .replace(/~~(.+?)~~/g, '$1')
-            .replace(/`(.+?)`/g, '$1')
-            .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-            .replace(/[#*`_\[\]]/g, '')
-            .trim();
-    }
-
-    // Handle thumbnail
-    let ogImage = '';
-    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-
-    // Logic for picking a thumbnail
-    let rawThumbnail = data.thumbnail || data.url || '';
-
-    // Support Obsidian [[Wiki Link]] syntax in frontmatter
-    if (rawThumbnail.startsWith('[[') && rawThumbnail.endsWith(']]')) {
-        rawThumbnail = rawThumbnail.slice(2, -2);
-    }
-
-    if (rawThumbnail) {
-        const ytMatch = rawThumbnail.match(youtubeRegex);
-        if (ytMatch && ytMatch[1]) {
-            ogImage = `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
-        } else if (rawThumbnail.startsWith('http')) {
-            ogImage = rawThumbnail;
-        } else {
-            ogImage = `images/${rawThumbnail}`;
-        }
-    }
-
-    if (!ogImage) {
-        // Strip code blocks to avoid false positives
-        const contentCleaned = body
-            .replace(/```[\s\S]*?```/g, '')
-            .replace(/`[^`]*`/g, '');
-
-        // Try to find first image or video link in body
-        const imageMatch = contentCleaned.match(/!\[\[([^\]]+)\]\]/) || contentCleaned.match(/!\[.*?\]\((.*?)\)/);
-        if (imageMatch) {
-            const rawUrl = imageMatch[1] || imageMatch[2];
-            if (rawUrl) {
-                const ytMatch = rawUrl.match(youtubeRegex);
-                if (ytMatch && ytMatch[1]) {
-                    ogImage = `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
-                } else {
-                    ogImage = rawUrl.startsWith('http') ? rawUrl : `images/${rawUrl}`;
-                }
-            }
-        }
-    }
-
-    // Replace Meta Tags in Template
-    let html = template;
-
-    // Update Title
-    html = html.replace(/<title>.*?<\/title>/, `<title>${title} - SharePage</title>`);
-    html = html.replace(/<meta property="og:title" content=".*?">/, `<meta property="og:title" content="${title}">`);
-
-    // Update Description
-    // Update Description
-    html = html.replace(/<meta name="description" content=".*?">/, `<meta name="description" content="${description}">`);
-    html = html.replace(/<meta property="og:description" content=".*?">/, `<meta property="og:description" content="${description}">`);
-
-    const DOMAIN = 'https://wis-graph.github.io/sharepage'; // TODO: Make configurable
-
-    // Update URL
-    // Both static HTML (posts/NoteName.html) and SPA route (posts/NoteName) use same base path
+    // Prepare Absolute URLs for OG
     const urlSlug = mdFilename.replace(/\.md$/, '');
     const pageUrl = `${DOMAIN}/posts/${encodeURIComponent(urlSlug)}`;
-    html = html.replace(/<meta property="og:url" content=".*?">/, `<meta property="og:url" content="${pageUrl}">`);
 
-    // Update Image
+    let finalOgImage = '';
     if (ogImage) {
-        // Encode it for safety if it's a local file ref
-        // OG Image MUST be absolute URL for Kakaotalk/Facebook etc.
-        let finalImage = ogImage.startsWith('http') ? ogImage : ogImage.split('/').map(p => encodeURIComponent(p)).join('/');
-
-        if (!finalImage.startsWith('http')) {
-            // Remove leading slash if present to avoid double slash with domain
-            if (finalImage.startsWith('/')) finalImage = finalImage.substring(1);
-            finalImage = `${DOMAIN}/${finalImage}`;
+        finalOgImage = ogImage.startsWith('http') ? ogImage : ogImage.split('/').map(p => encodeURIComponent(p)).join('/');
+        if (!finalOgImage.startsWith('http')) {
+            if (finalOgImage.startsWith('/')) finalOgImage = finalOgImage.substring(1);
+            finalOgImage = `${DOMAIN}/${finalOgImage}`;
         }
-
-        html = html.replace(/<meta property="og:image" content=".*?">/, `<meta property="og:image" content="${finalImage}">`);
     }
 
-    // Generate Static HTML File (Pre-rendering)
-    // Structure: /posts/NoteName.html (flat structure)
-    // This allows .../sharepage/posts/NoteName.html to work reliably
+    let staticHtml = applyMetadataToTemplate(template, {
+        title,
+        description,
+        pageUrl,
+        finalOgImage,
+        isVideo: ogImage.includes('youtube.com/vi/')
+    });
+
+    staticHtml = fixResourcePaths(staticHtml);
+
     const fileName = mdFilename.replace(/\.md$/, '.html');
-
-    // Skip if filename conflicts with system files
     const RESERVED = ['file_index.html'];
-    if (RESERVED.includes(fileName)) {
-        console.warn(`[Sync] Skipping reserved filename: ${fileName}`);
-        return;
-    }
+    if (RESERVED.includes(fileName)) return;
 
-    const postsDir = path.join(ROOT_DIR, 'posts');
-    if (!fs.existsSync(postsDir)) {
-        fs.mkdirSync(postsDir, { recursive: true });
-    }
-
-    // Fix relative paths for resources since we are one level deep (posts/)
-    let staticHtml = html;
-    staticHtml = staticHtml.replace(/href="css\//g, 'href="../css/');
-    staticHtml = staticHtml.replace(/src="js\//g, 'src="../js/');
-    staticHtml = staticHtml.replace(/href="images\//g, 'href="../images/');
-    staticHtml = staticHtml.replace(/src="images\//g, 'src="../images/');
-
-    fs.writeFileSync(path.join(postsDir, fileName), staticHtml);
+    fs.writeFileSync(path.join(POSTS_DIR, fileName), staticHtml);
     console.log(`[Sync] Generated: posts/${fileName}`);
 }
 
@@ -186,34 +203,22 @@ function generateStaticHtml(template, mdFilename) {
 function sync() {
     console.log('[Sync] Starting pre-rendering (Structured Mode)...');
 
-    if (!fs.existsSync(TEMPLATE_PATH)) {
-        console.error('[Sync] Error: index.html not found');
-        return;
-    }
-
-    if (!fs.existsSync(NOTES_DIR)) {
-        console.error('[Sync] Error: notes/ directory not found');
+    if (!fs.existsSync(TEMPLATE_PATH) || !fs.existsSync(NOTES_DIR)) {
+        console.error('[Sync] Error: Essential files or directories missing');
         return;
     }
 
     const template = fs.readFileSync(TEMPLATE_PATH, 'utf8');
     const files = fs.readdirSync(NOTES_DIR);
-
-    const mdFiles = files.filter(f =>
-        f.endsWith('.md') &&
-        !f.startsWith('_')
-    );
+    const mdFiles = files.filter(f => f.endsWith('.md') && !f.startsWith('_'));
 
     mdFiles.forEach(file => {
         generateStaticHtml(template, file);
     });
 
-    // Generate file index for auto-dashboard
     const indexData = JSON.stringify(mdFiles, null, 2);
     fs.writeFileSync(path.join(POSTS_DIR, 'file_index.json'), indexData);
-    console.log(`[Sync] Generated file_index.json with ${mdFiles.length} entries.`);
-
-    console.log(`[Sync] Completed. Generated ${mdFiles.length} HTML files into posts/ directory.`);
+    console.log(`[Sync] Completed. Generated ${mdFiles.length} HTML files.`);
 }
 
 sync();
