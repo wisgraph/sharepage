@@ -94,6 +94,11 @@
   margin-right: auto;
 }
 
+.main-layout.is-dashboard .content-wrapper {
+  max-width: 100%;
+  /* Use more width for grid layout */
+}
+
 .main-layout.is-dashboard .toc-sidebar {
   display: none;
   /* No TOC on dashboard */
