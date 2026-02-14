@@ -3,8 +3,8 @@
  * Handles the transformation from Markdown to HTML
  */
 
-import { parseFrontmatter, transformObsidianImageLinks, transformInternalLinks, slugify } from './markdownService.js?v=41000';
-import { getRawUrl } from './pathService.js?v=41000';
+import { parseFrontmatter, transformObsidianImageLinks, transformInternalLinks, slugify } from './markdownService.js?v=42000';
+import { getRawUrl } from './pathService.js?v=42000';
 import {
     applySyntaxHighlighting,
     renderMermaidDiagrams,
@@ -12,9 +12,9 @@ import {
     restoreMath,
     normalizeMermaidAliases,
     transformYouTubeLinks
-} from './renderService.js?v=41000';
-import { transformCallouts } from '../callouts.js?v=41000';
-import { addHeadingIds } from '../toc.js?v=41000';
+} from './renderService.js?v=42000';
+import { transformCallouts } from './calloutService.js?v=42000';
+import { addHeadingIds } from './tocService.js?v=42000';
 
 /**
  * Core processing pipeline: Markdown -> HTML
@@ -23,85 +23,35 @@ import { addHeadingIds } from '../toc.js?v=41000';
  * @returns {Object} Processed document data
  */
 export async function processDocument(filename, rawContent) {
-    console.log('[DocService] Original markdown length:', rawContent.length);
+    console.log('[DocService] Processing document:', filename);
 
-    // 1. Parse Frontmatter
+    // 1. Initial Parsing & Pre-processing
     let { data, content } = parseFrontmatter(rawContent);
-    console.log('[DocService] Content after frontmatter:', content.length);
-
-    // 1.5. Normalize Mermaid Aliases
     content = normalizeMermaidAliases(content);
-
-    // 1.6. Transform Callouts (before markdown parsing)
     content = transformCallouts(content);
-
-    // 2. Transform Images
     content = transformObsidianImageLinks(content);
-
-    // 2.1. Transform Internal Links
     content = transformInternalLinks(content);
-
-    // 2.5. Transform YouTube Links
     content = transformYouTubeLinks(content);
 
-    // 3. Protect Math
-    content = protectMath(content);
+    // 2. Math Protection (Stateless)
+    const { content: protectedContent, mathMap } = protectMath(content);
+    content = protectedContent;
 
-    // 4. Parse Markdown into HTML
-    // Set options for better Obsidian/GFM compatibility
-    marked.use({
-        gfm: true,
-        breaks: true,
-        mangle: false,
-        headerIds: false
-    });
-
-    // Pre-process for CJK Bold boundaries
-    content = content.replace(/(\*\*|__)(?=\S)([\s\S]+?)(?<=\S)\1/g, (match, p1, p2) => {
-        if (p2.includes(p1)) return match;
-        return `<strong>${p2}</strong>`;
-    });
-
+    // 3. Markdown to HTML Transformation
+    configureMarked();
+    content = preprocessMarkdown(content);
     let html = marked.parse(content);
 
-    // 5. Post-processing HTML
+    // 4. Post-processing HTML
     html = addHeadingIds(html);
     html = applySyntaxHighlighting(html);
     html = renderMermaidDiagrams(html);
-    html = restoreMath(html);
+    html = restoreMath(html, mathMap);
     html = transformInternalLinks(html);
 
-    // Extract Metadata for Head Tags
-    let description = data.description || data.summary || data.excerpt || '';
-    if (!description) {
-        const plainText = content.replace(/[#*`_\[\]]/g, '').trim();
-        description = plainText.substring(0, 150) + (plainText.length > 150 ? '...' : '');
-    }
-
-    let thumbnail = data.thumbnail ? getRawUrl('_image_' + data.thumbnail) : null;
-    if (!thumbnail) {
-        const obsidianMatch = rawContent.match(/!\[\[([^\]]+)\]\]/);
-        let obsidianIndex = obsidianMatch ? obsidianMatch.index : Infinity;
-
-        const markdownMatch = rawContent.match(/!\[([^\]]*)\]\(([^)]+)\)/);
-        let markdownIndex = markdownMatch ? markdownMatch.index : Infinity;
-
-        if (obsidianMatch || markdownMatch) {
-            if (obsidianIndex < markdownIndex) {
-                thumbnail = getRawUrl('_image_' + obsidianMatch[1]);
-            } else if (markdownMatch) {
-                const url = markdownMatch[2];
-                const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-                const ytMatch = url.match(youtubeRegex);
-
-                if (ytMatch && ytMatch[1]) {
-                    thumbnail = `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
-                } else {
-                    thumbnail = url;
-                }
-            }
-        }
-    }
+    // 5. Metadata Extraction
+    const description = extractDescription(data, content);
+    const thumbnail = extractThumbnail(data, rawContent);
 
     return {
         html: html,
@@ -114,4 +64,70 @@ export async function processDocument(filename, rawContent) {
             url: window.location.href
         }
     };
+}
+
+/**
+ * Configure marked.js options
+ */
+function configureMarked() {
+    marked.use({
+        gfm: true,
+        breaks: true,
+        mangle: false,
+        headerIds: false
+    });
+}
+
+/**
+ * Pre-process markdown for specific fixes (e.g., CJK Bold)
+ */
+function preprocessMarkdown(content) {
+    // Pre-process for CJK Bold boundaries
+    return content.replace(/(\*\*|__)(?=\S)([\s\S]+?)(?<=\S)\1/g, (match, p1, p2) => {
+        if (p2.includes(p1)) return match;
+        return `<strong>${p2}</strong>`;
+    });
+}
+
+/**
+ * Extract or generate description for SEO
+ */
+function extractDescription(data, content) {
+    let description = data.description || data.summary || data.excerpt || '';
+    if (!description) {
+        const plainText = content.replace(/[#*`_\[\]]/g, '').trim();
+        description = plainText.substring(0, 150) + (plainText.length > 150 ? '...' : '');
+    }
+    return description;
+}
+
+/**
+ * Extract thumbnail URL from frontmatter or content
+ */
+function extractThumbnail(data, rawContent) {
+    if (data.thumbnail) {
+        return getRawUrl('_image_' + data.thumbnail);
+    }
+
+    const obsidianMatch = rawContent.match(/!\[\[([^\]]+)\]\]/);
+    const markdownMatch = rawContent.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+
+    if (!obsidianMatch && !markdownMatch) return null;
+
+    const obsidianIndex = obsidianMatch ? obsidianMatch.index : Infinity;
+    const markdownIndex = markdownMatch ? markdownMatch.index : Infinity;
+
+    if (obsidianIndex < markdownIndex) {
+        return getRawUrl('_image_' + obsidianMatch[1]);
+    } else if (markdownMatch) {
+        const url = markdownMatch[2];
+        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+        const ytMatch = url.match(youtubeRegex);
+
+        if (ytMatch && ytMatch[1]) {
+            return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+        }
+        return url;
+    }
+    return null;
 }

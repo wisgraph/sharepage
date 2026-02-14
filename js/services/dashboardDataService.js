@@ -3,9 +3,9 @@
  * Handles extracting and processing data for the dashboard
  */
 
-import { fetchFile } from '../core/fileApi.js?v=41000';
-import { getNotePath, getRawUrl } from './pathService.js?v=41000';
-import { parseFrontmatter } from './markdownService.js?v=41000';
+import { fetchFile } from '../core/fileApi.js?v=42000';
+import { getNotePath, getRawUrl } from './pathService.js?v=42000';
+import { parseFrontmatter } from './markdownService.js?v=42000';
 
 /**
  * Extracts links grouped by sections based on ## Headings
@@ -76,7 +76,8 @@ function extractMetadata(markdown, filename) {
         description: description || 'No description available.',
         filename: filename,
         thumbnail: thumbnail,
-        tags: data.tags || []
+        tags: data.tags || [],
+        type: data.type || data.source_type || null
     };
 }
 
@@ -135,6 +136,7 @@ export async function extractNoteFromLink(link) {
             description: metadata.description,
             thumbnail: thumbnail,
             tags: metadata.tags || [],
+            type: metadata.type,
             path: getNotePath(note.file.replace(/\.md$/, ''))
         };
     } catch (error) {
@@ -180,11 +182,37 @@ export async function loadSectionedDashboard(dashboardContent) {
                 const validUnlisted = unlistedNotes.filter(n => n !== null);
 
                 if (validUnlisted.length > 0) {
-                    result.push({
-                        title: 'Others',
-                        notes: validUnlisted,
-                        count: validUnlisted.length
+                    // Separate YouTube notes from others
+                    const youtubeNotes = validUnlisted.filter(n => {
+                        const isYtType = n.type && n.type.toLowerCase() === 'youtube';
+                        const hasYtThumb = n.thumbnail && n.thumbnail.includes('youtube.com/vi/');
+                        return isYtType || hasYtThumb;
                     });
+                    const otherNotes = validUnlisted.filter(n => !youtubeNotes.includes(n));
+
+                    // Add to YouTube section
+                    if (youtubeNotes.length > 0) {
+                        const existingYtSection = result.find(s => s.title === 'YouTube');
+                        if (existingYtSection) {
+                            existingYtSection.notes.push(...youtubeNotes);
+                            existingYtSection.count = existingYtSection.notes.length;
+                        } else {
+                            result.push({
+                                title: 'YouTube',
+                                notes: youtubeNotes,
+                                count: youtubeNotes.length
+                            });
+                        }
+                    }
+
+                    // Add remaining to Others section
+                    if (otherNotes.length > 0) {
+                        result.push({
+                            title: 'Others',
+                            notes: otherNotes,
+                            count: otherNotes.length
+                        });
+                    }
                 }
             }
         }

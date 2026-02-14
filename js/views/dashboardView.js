@@ -11,10 +11,10 @@ import {
     getAllTags,
     getActiveTags,
     getSearchQuery
-} from '../state/appState.js?v=41000';
-import { loadSectionedDashboard } from '../services/dashboardDataService.js?v=41000';
-import { renderSectionedDashboard, renderDashboardControls } from './dashboardCardView.js?v=41000';
-import { filterSections } from '../services/dashboardService.js?v=41000';
+} from '../state/appState.js?v=42000';
+import { loadSectionedDashboard } from '../services/dashboardDataService.js?v=42000';
+import { renderSectionedDashboard, renderDashboardControls } from './dashboardCardView.js?v=42000';
+import { filterSections } from '../services/dashboardService.js?v=42000';
 
 /**
  * Renders the structured dashboard view
@@ -79,4 +79,32 @@ export function renderFullDashboard() {
     ${controlsHtml}
     ${sectionsHtml}
   `;
+}
+
+/**
+ * Updates the dashboard search results in the DOM
+ * @param {string} contentHtml - The new HTML for the results
+ * @param {boolean} isFullRender - Whether to re-render the entire app container
+ */
+export function updateDashboardResults(contentHtml, isFullRender = false) {
+    const app = document.getElementById('app');
+    if (!app) return;
+
+    if (isFullRender) {
+        app.innerHTML = contentHtml;
+        // Maintain search focus if needed (handled by caller if specific)
+        return;
+    }
+
+    const controls = document.querySelector('.dashboard-controls');
+    if (controls) {
+        // Remove everything after controls and insert new content
+        while (controls.nextElementSibling) {
+            controls.nextElementSibling.remove();
+        }
+        controls.insertAdjacentHTML('afterend', contentHtml);
+    } else {
+        // Fallback to full render if controls not found
+        app.innerHTML = renderFullDashboard();
+    }
 }

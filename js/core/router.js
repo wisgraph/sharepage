@@ -3,9 +3,9 @@
  * Core routing logic only. Delegates to controllers for specific routes.
  */
 
-import { BASE_PATH } from './core/config.js?v=41000';
-import { parseNotePath } from './services/pathService.js?v=41000';
-import { handleDashboardRoute, handleDocumentRoute } from './controllers/docController.js?v=41000';
+import { BASE_PATH } from './config.js?v=42000';
+import { parseNotePath } from '../services/pathService.js?v=42000';
+import { handleDashboardRoute, handleDocumentRoute } from '../controllers/docController.js?v=42000';
 
 /**
  * Main navigation entry point
@@ -14,7 +14,7 @@ import { handleDashboardRoute, handleDocumentRoute } from './controllers/docCont
 export async function navigate(rawPath) {
   console.log('[Router] Navigating to:', rawPath, '(Base:', BASE_PATH, ')');
 
-  // Detect and fix malformed paths with duplicate BASE_PATH
+  // 1. Detect and fix malformed paths with duplicate BASE_PATH
   if (BASE_PATH && rawPath.includes(BASE_PATH + BASE_PATH)) {
     const correctPath = rawPath.replace(BASE_PATH + BASE_PATH, BASE_PATH);
     console.warn(`[Router] Malformed path detected: ${rawPath}, redirecting to ${correctPath}`);
@@ -22,7 +22,28 @@ export async function navigate(rawPath) {
     return navigate(correctPath);
   }
 
-  // Normalize path by removing BASE_PATH if present
+  // 2. Normalize path
+  const normalizedPath = normalizePath(rawPath);
+
+  // 3. Routing logic
+  if (normalizedPath === '' || normalizedPath === '/') {
+    await handleDashboardRoute();
+  } else {
+    // Use centralized path parser
+    const noteName = parseNotePath(normalizedPath);
+
+    if (noteName) {
+      await handleDocumentRoute(noteName);
+    } else {
+      await handleLegacyRedirect(normalizedPath);
+    }
+  }
+}
+
+/**
+ * Normalizes the raw path by removing BASE_PATH and cleanup
+ */
+function normalizePath(rawPath) {
   let path = rawPath;
   if (BASE_PATH && path.startsWith(BASE_PATH)) {
     path = path.slice(BASE_PATH.length);
@@ -31,39 +52,33 @@ export async function navigate(rawPath) {
   // Ensure path starts with /
   if (!path.startsWith('/')) path = '/' + path;
 
-  // Strip trailing slashes for consistency
+  // Strip trailing slashes
   if (path.length > 1 && path.endsWith('/')) {
     path = path.slice(0, -1);
   }
 
-  let normalizedPath = path;
-  if (normalizedPath.endsWith('.html')) {
-    normalizedPath = normalizedPath.slice(0, -5);
+  // Strip .html extension
+  if (path.endsWith('.html')) {
+    path = path.slice(0, -5);
   }
 
-  if (normalizedPath === '' || normalizedPath === '/') {
-    await handleDashboardRoute();
-  } else {
-    // Use centralized path parser
-    const noteName = parseNotePath(normalizedPath);
+  return path;
+}
 
-    if (noteName) {
-      // It's a note path (posts/NoteName)
-      await handleDocumentRoute(noteName);
-    } else {
-      // Legacy path detected (/welcome instead of /posts/welcome)
-      const filename = decodeURIComponent(normalizedPath.slice(1));
-      const newPath = (BASE_PATH || '') + '/posts/' + filename;
+/**
+ * Handles redirection for legacy URLs (/welcome -> /posts/welcome)
+ */
+async function handleLegacyRedirect(normalizedPath) {
+  const filename = decodeURIComponent(normalizedPath.slice(1));
+  const newPath = (BASE_PATH || '') + '/posts/' + filename;
 
-      console.log(`[Router] Redirecting legacy path ${normalizedPath} to ${newPath}`);
+  console.log(`[Router] Redirecting legacy path ${normalizedPath} to ${newPath}`);
 
-      // Replace current history entry with new path
-      history.replaceState(null, '', newPath);
+  // Replace current history entry with new path
+  history.replaceState(null, '', newPath);
 
-      // Navigate to new path logic
-      await handleDocumentRoute(filename);
-    }
-  }
+  // Navigate to new path logic
+  await handleDocumentRoute(filename);
 }
 
 /**

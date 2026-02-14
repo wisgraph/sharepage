@@ -110,7 +110,8 @@ function extractOgImage(data, body) {
     }
 
     // 3. Fallback for YouTube Source
-    if ((data.source_type || '').toLowerCase() === 'youtube') {
+    const docType = (data.type || data.source_type || '').toLowerCase();
+    if (docType === 'youtube') {
         const anyYtMatch = body.match(youtubeRegex);
         if (anyYtMatch && anyYtMatch[1]) {
             return `https://img.youtube.com/vi/${anyYtMatch[1]}/maxresdefault.jpg`;

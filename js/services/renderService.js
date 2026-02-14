@@ -3,8 +3,6 @@
  * Handles transformations on Markdown and processed HTML (Math, Highlighting, Mermaid)
  */
 
-const mathMap = new Map();
-let mathCounter = 0;
 
 /**
  * Normalize merlight, merdark, mer to mermaid
@@ -17,11 +15,11 @@ export function normalizeMermaidAliases(markdown) {
  * Protect Math formulas from markdown parsing
  */
 export function protectMath(markdown) {
-    mathMap.clear();
-    mathCounter = 0;
+    const mathMap = new Map();
+    let mathCounter = 0;
 
     // Protect Display Math $$ ... $$
-    markdown = markdown.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+    const protectedMarkdown = markdown.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
         const placeholder = `@@MATH_BLOCK_${mathCounter}@@`;
         mathMap.set(placeholder, { math: math.trim(), displayMode: true });
         mathCounter++;
@@ -29,20 +27,23 @@ export function protectMath(markdown) {
     });
 
     // Protect Inline Math $ ... $
-    markdown = markdown.replace(/(?<!\\)\$([^$\n]+?)(?<!\\)\$/g, (match, math) => {
+    const finalMarkdown = protectedMarkdown.replace(/(?<!\\)\$([^$\n]+?)(?<!\\)\$/g, (match, math) => {
         const placeholder = `@@MATH_INLINE_${mathCounter}@@`;
         mathMap.set(placeholder, { math: math.trim(), displayMode: false });
         mathCounter++;
         return placeholder;
     });
 
-    return markdown;
+    return { content: finalMarkdown, mathMap };
 }
 
 /**
  * Restore Math formulas with KaTeX rendering
  */
-export function restoreMath(html) {
+export function restoreMath(html, mathMap) {
+    if (!mathMap || mathMap.size === 0) return html;
+
+    let finalHtml = html;
     for (const [placeholder, data] of mathMap.entries()) {
         try {
             if (typeof katex !== 'undefined') {
@@ -50,16 +51,16 @@ export function restoreMath(html) {
                     displayMode: data.displayMode,
                     throwOnError: false
                 });
-                html = html.split(placeholder).join(rendered);
+                finalHtml = finalHtml.split(placeholder).join(rendered);
             } else {
-                html = html.split(placeholder).join(data.math);
+                finalHtml = finalHtml.split(placeholder).join(data.math);
             }
         } catch (e) {
             console.error('[Math] Error rendering math:', e);
-            html = html.split(placeholder).join(data.math);
+            finalHtml = finalHtml.split(placeholder).join(data.math);
         }
     }
-    return html;
+    return finalHtml;
 }
 
 /**

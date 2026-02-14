@@ -3,11 +3,10 @@
  * Main entry point for application initialization
  */
 
-import { initRouter, navigate } from '../router.js?v=41000';
-import { BASE_PATH } from '../core/config.js?v=41000';
-import { initTOCToggle } from '../toc.js?v=41000';
-import { goToPage } from '../dashboard.js?v=41000';
-import { initTheme, toggleTheme } from './themeController.js?v=41000';
+import { initRouter, navigate } from '../core/router.js?v=42000';
+import { BASE_PATH } from '../core/config.js?v=42000';
+import { initTOCToggle } from '../views/tocView.js?v=42000';
+import { initTheme, toggleTheme } from './themeController.js?v=42000';
 
 /**
  * Initializes the entire application
@@ -15,10 +14,7 @@ import { initTheme, toggleTheme } from './themeController.js?v=41000';
 export function initializeApp() {
     console.log('[App] Initializing application...');
 
-    // 1. Expose global handlers
-    window.goToPage = goToPage;
-
-    // 2. Load theme
+    // 1. Load theme
     initTheme();
 
     // 3. Set up event listeners

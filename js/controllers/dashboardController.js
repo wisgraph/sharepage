@@ -10,11 +10,11 @@ import {
     getActiveTags,
     addActiveTag,
     removeActiveTag
-} from '../state/appState.js?v=41000';
-import { filterSections } from '../services/dashboardService.js?v=41000';
-import { renderSectionedDashboard } from '../views/dashboardCardView.js?v=41000';
-import { renderFullDashboard } from '../views/dashboardView.js?v=41000';
-import { initDashboardAnimations } from '../views/animations.js?v=41000';
+} from '../state/appState.js?v=42000';
+import { filterSections } from '../services/dashboardService.js?v=42000';
+import { renderSectionedDashboard } from '../views/dashboardCardView.js?v=42000';
+import { renderFullDashboard, updateDashboardResults } from '../views/dashboardView.js?v=42000';
+import { initDashboardAnimations } from '../views/animations.js?v=42000';
 
 /**
  * Global Event Handlers for Dashboard
@@ -30,9 +30,6 @@ export function initDashboardHandlers() {
  */
 function handleSearch(value) {
     setSearchQuery(value);
-
-    const app = document.getElementById('app');
-    if (!app) return;
 
     const filteredSections = filterSections(
         getDashboardSections(),
@@ -54,17 +51,13 @@ function handleSearch(value) {
     const controls = document.querySelector('.dashboard-controls');
 
     if (controls) {
-        // Partial DOM update for better performance
-        while (controls.nextElementSibling) {
-            controls.nextElementSibling.remove();
-        }
-        controls.insertAdjacentHTML('afterend', contentHtml);
+        updateDashboardResults(contentHtml, false);
         initDashboardAnimations();
     } else {
         // Full re-render fallback
-        app.innerHTML = renderFullDashboard();
+        updateDashboardResults(renderFullDashboard(), true);
 
-        // Maintain focus and cursor position
+        // Maintain focus and cursor position after full re-render
         const input = document.querySelector('.dashboard-search-input');
         if (input) {
             input.focus();
@@ -89,9 +82,6 @@ function handleTagToggle(tag) {
         removeActiveTag(tag);
     }
 
-    const app = document.getElementById('app');
-    if (app) {
-        app.innerHTML = renderFullDashboard();
-        initDashboardAnimations();
-    }
+    updateDashboardResults(renderFullDashboard(), true);
+    initDashboardAnimations();
 }

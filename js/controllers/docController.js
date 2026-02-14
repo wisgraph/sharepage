@@ -3,15 +3,16 @@
  * Coordinates document loading, processing, and rendering
  */
 
-import { fetchFile } from '../core/fileApi.js?v=41000';
-import { processDocument } from '../services/docService.js?v=41000';
-import { renderDocumentView, renderError, renderLoading, prepareLayout } from '../views/docView.js?v=41000';
-import { initImageViewer } from '../image-viewer.js?v=41000';
-import { initCodeUtils } from '../code-utils.js?v=41000';
-import { initLinkPreviews } from '../preview.js?v=41000';
-import { renderTOC, initScrollHighlight } from '../toc.js?v=41000';
-import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations } from '../views/animations.js?v=41000';
-import { loadDashboardNotes, renderDashboardPage } from '../dashboard.js?v=41000';
+import { fetchFile } from '../core/fileApi.js?v=42000';
+import { processDocument } from '../services/docService.js?v=42000';
+import { renderDocumentView, renderError, renderLoading, prepareLayout } from '../views/docView.js?v=42000';
+import { initImageViewer } from '../views/imageViewer.js?v=42000';
+import { initCodeUtils } from '../views/codeView.js?v=42000';
+import { initLinkPreviews } from '../views/previewView.js?v=42000';
+import { renderTOC, initScrollHighlight } from '../views/tocView.js?v=42000';
+import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations } from '../views/animations.js?v=42000';
+import { loadDashboardNotes } from '../services/dashboardService.js?v=42000';
+import { renderDashboardPage } from '../views/dashboardView.js?v=42000';
 
 /**
  * Handles individual document route logic
