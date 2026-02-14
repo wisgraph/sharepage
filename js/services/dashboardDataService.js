@@ -3,9 +3,9 @@
  * Handles extracting and processing data for the dashboard
  */
 
-import { fetchFile } from '../core/fileApi.js?v=1771082694499';
-import { getNotePath, getRawUrl } from './pathService.js?v=1771082694499';
-import { parseFrontmatter, cleanPlainText } from './markdownService.js?v=1771082694499';
+import { fetchFile } from '../core/fileApi.js?v=1771085981885';
+import { getNotePath, getRawUrl } from './pathService.js?v=1771085981885';
+import { parseFrontmatter, cleanPlainText } from './markdownService.js?v=1771085981885';
 
 /**
  * Extracts links grouped by sections based on ## Headings
@@ -55,7 +55,7 @@ export function extractSectionedLinks(dashboardContent) {
 function extractMetadata(markdown, filename) {
     const { data, content: contentWithoutFrontmatter } = parseFrontmatter(markdown);
 
-    let title = data.title || filename.replace(/\.md$/, '').replace(/^_/, '');
+    let title = data.title || filename.replace(/\.md$/, '').replace(/^_/, '').replace(/_/g, ' ');
     let description = data.description || data.summary || data.excerpt || '';
     let thumbnail = data.thumbnail || null;
 
@@ -122,7 +122,7 @@ export async function extractNoteFromLink(link, sortOrder = []) {
     const filename = link.endsWith('.md') ? link : link + '.md';
     const note = {
         file: filename,
-        title: link.replace(/\.md$/, '')
+        title: link.replace(/\.md$/, '').replace(/_/g, ' ')
     };
 
     try {

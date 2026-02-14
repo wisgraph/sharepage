@@ -11,7 +11,7 @@ import { BASE_PATH, PATHS } from '../core/config.js';
  * Get the SPA route path for a note
  */
 export function getNotePath(noteName) {
-    const cleanName = noteName.replace(/\.md$/, '');
+    const cleanName = noteName.replace(/\.md$/, '').replace(/ /g, '_');
     return (BASE_PATH || '') + '/' + PATHS.NOTE_PREFIX + '/' + cleanName;
 }
 
@@ -19,7 +19,7 @@ export function getNotePath(noteName) {
  * Get the markdown file path for a note
  */
 export function getNoteFile(noteName) {
-    const cleanName = noteName.replace(/\.md$/, '');
+    const cleanName = noteName.replace(/\.md$/, '').replace(/ /g, '_');
     return PATHS.NOTES_DIR + '/' + cleanName + '.md';
 }
 
@@ -53,10 +53,10 @@ export function getRawUrl(filename) {
     let targetFile = filename;
 
     if (targetFile.startsWith('_image_')) {
-        targetFile = PATHS.IMAGES_DIR + '/' + targetFile.replace('_image_', '');
+        targetFile = PATHS.IMAGES_DIR + '/' + targetFile.replace('_image_', '').replace(/ /g, '_');
     } else if (!targetFile.includes('/') && !targetFile.endsWith('.css') && !targetFile.endsWith('.js')) {
         if (!targetFile.endsWith('.md')) targetFile += '.md';
-        targetFile = PATHS.NOTES_DIR + '/' + targetFile;
+        targetFile = PATHS.NOTES_DIR + '/' + targetFile.replace(/ /g, '_');
     }
 
     const encodedFilename = targetFile.split('/').map(part => encodeURIComponent(part)).join('/');

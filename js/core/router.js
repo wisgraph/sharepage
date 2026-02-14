@@ -3,9 +3,9 @@
  * Core routing logic only. Delegates to controllers for specific routes.
  */
 
-import { BASE_PATH } from './config.js?v=1771082694499';
-import { parseNotePath } from '../services/pathService.js?v=1771082694499';
-import { handleDashboardRoute, handleDocumentRoute } from '../controllers/docController.js?v=1771082694499';
+import { BASE_PATH } from './config.js?v=1771085981885';
+import { parseNotePath } from '../services/pathService.js?v=1771085981885';
+import { handleDashboardRoute, handleDocumentRoute } from '../controllers/docController.js?v=1771085981885';
 
 /**
  * Main navigation entry point
@@ -70,7 +70,8 @@ function normalizePath(rawPath) {
  */
 async function handleLegacyRedirect(normalizedPath) {
   const filename = decodeURIComponent(normalizedPath.slice(1));
-  const newPath = (BASE_PATH || '') + '/posts/' + filename;
+  const webFriendlyName = filename.replace(/ /g, '_');
+  const newPath = (BASE_PATH || '') + '/posts/' + webFriendlyName;
 
   console.log(`[Router] Redirecting legacy path ${normalizedPath} to ${newPath}`);
 

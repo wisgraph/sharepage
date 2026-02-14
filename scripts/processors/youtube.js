@@ -5,7 +5,7 @@ const utils = require('./utils');
  */
 module.exports = {
     process: (data, body, filename) => {
-        const title = data.title || filename.replace(/\.md$/, '');
+        const title = data.title || filename.replace(/\.md$/, '').replace(/_/g, ' ');
 
         let description = data.description || data.summary || '';
         if (!description) {

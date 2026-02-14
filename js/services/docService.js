@@ -3,8 +3,8 @@
  * Handles the transformation from Markdown to HTML
  */
 
-import { parseFrontmatter, transformObsidianImageLinks, transformInternalLinks, slugify } from './markdownService.js?v=1771082694499';
-import { getRawUrl } from './pathService.js?v=1771082694499';
+import { parseFrontmatter, transformObsidianImageLinks, transformInternalLinks, slugify } from './markdownService.js?v=1771085981885';
+import { getRawUrl } from './pathService.js?v=1771085981885';
 import {
     applySyntaxHighlighting,
     renderMermaidDiagrams,
@@ -12,9 +12,9 @@ import {
     restoreMath,
     normalizeMermaidAliases,
     transformYouTubeLinks
-} from './renderService.js?v=1771082694499';
-import { transformCallouts } from './calloutService.js?v=1771082694499';
-import { addHeadingIds } from './tocService.js?v=1771082694499';
+} from './renderService.js?v=1771085981885';
+import { transformCallouts } from './calloutService.js?v=1771085981885';
+import { addHeadingIds } from './tocService.js?v=1771085981885';
 
 /**
  * Core processing pipeline: Markdown -> HTML
@@ -56,9 +56,9 @@ export async function processDocument(filename, rawContent) {
     return {
         html: html,
         tags: data.tags || [],
-        title: filename.replace(/\.md$/, ''),
+        title: filename.replace(/\.md$/, '').replace(/_/g, ' '),
         metadata: {
-            title: data.title || filename.replace(/\.md$/, ''),
+            title: data.title || filename.replace(/\.md$/, '').replace(/_/g, ' '),
             description: description,
             thumbnail: thumbnail,
             url: window.location.href
