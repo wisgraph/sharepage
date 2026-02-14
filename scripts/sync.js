@@ -144,14 +144,10 @@ function applyMetadataToTemplate(template, metadata) {
 }
 
 /**
- * Fix relative paths for resources when the file is in posts/ subdir
+ * Fix relative paths for resources (Removed as <base> tag handles this)
  */
 function fixResourcePaths(html) {
-    return html
-        .replace(/href="css\//g, 'href="../css/')
-        .replace(/src="js\//g, 'src="../js/')
-        .replace(/href="images\//g, 'href="../images/')
-        .replace(/src="images\//g, 'src="../images/');
+    return html;
 }
 
 /**
