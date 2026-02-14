@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT_DIR = path.join(__dirname, '..');
-const TEMPLATE_PATH = path.join(ROOT_DIR, 'index.html');
+const TEMPLATE_PATH = path.join(ROOT_DIR, 'src', 'index.html');
 const NOTES_DIR = path.join(ROOT_DIR, 'notes');
 const POSTS_DIR = path.join(ROOT_DIR, 'posts');
 const IMAGES_DIR = path.join(ROOT_DIR, 'images');
@@ -122,23 +122,22 @@ function extractOgImage(data, body) {
 }
 
 /**
- * Inject metatags and title into template
+ * Inject metatags and title into template using placeholders
  */
 function applyMetadataToTemplate(template, metadata) {
-    let html = template;
     const { title, description, pageUrl, finalOgImage, isVideo } = metadata;
 
-    html = html.replace(/<title>.*?<\/title>/, `<title>${title} - SharePage</title>`);
-    html = html.replace(/<meta property="og:title" content=".*?">/, `<meta property="og:title" content="${title}">`);
-    html = html.replace(/<meta name="description" content=".*?">/, `<meta name="description" content="${description}">`);
-    html = html.replace(/<meta property="og:description" content=".*?">/, `<meta property="og:description" content="${description}">`);
-    html = html.replace(/<meta property="og:url" content=".*?">/, `<meta property="og:url" content="${pageUrl}">`);
+    const replacements = {
+        '{{TITLE}}': title || 'SharePage',
+        '{{DESCRIPTION}}': description || 'Share your Obsidian notes with the world using SharePage.',
+        '{{PAGE_URL}}': pageUrl || DOMAIN,
+        '{{OG_IMAGE}}': finalOgImage || (DOMAIN + '/images/logo.png'),
+        '{{OG_TYPE}}': isVideo ? 'video.other' : 'website'
+    };
 
-    if (finalOgImage) {
-        html = html.replace(/<meta property="og:image" content=".*?">/, `<meta property="og:image" content="${finalOgImage}">`);
-        if (isVideo) {
-            html = html.replace(/<meta property="og:type" content="website">/, `<meta property="og:type" content="video.other">`);
-        }
+    let html = template;
+    for (const [placeholder, value] of Object.entries(replacements)) {
+        html = html.split(placeholder).join(value);
     }
 
     return html;
@@ -209,14 +208,23 @@ function sync() {
     const newVersion = `v=${Date.now()}`;
     let template = fs.readFileSync(TEMPLATE_PATH, 'utf8');
 
-    // 2. Update version in index.html for next time and consistency
-    template = template.replace(/\?v=\d+/g, `?${newVersion}`);
-    fs.writeFileSync(TEMPLATE_PATH, template);
-    console.log(`[Sync] Updated index.html with version: ${newVersion}`);
+    // 2. Update version and fill Dashboard defaults (Point 4 of Audit)
+    template = template.replace(/\?v=[^\s"']+/g, `?${newVersion}`);
+    const dashboardHtml = applyMetadataToTemplate(template, {
+        title: 'Dashboard',
+        description: 'Share your Obsidian notes with the world using SharePage.',
+        pageUrl: DOMAIN,
+        finalOgImage: DOMAIN + '/images/logo.png',
+        isVideo: false
+    });
 
-    // 3. Generate 404.html from updated index.html (Point 1 of Audit)
+    const pathIndex = path.join(ROOT_DIR, 'index.html');
+    fs.writeFileSync(pathIndex, dashboardHtml);
+    console.log(`[Sync] Updated root index.html with version and dashboard metadata`);
+
+    // 3. Generate 404.html from updated dashboardHtml (Point 1 of Audit)
     const path404 = path.join(ROOT_DIR, '404.html');
-    fs.writeFileSync(path404, template);
+    fs.writeFileSync(path404, dashboardHtml);
     console.log(`[Sync] Synchronized 404.html from index.html`);
 
     // 4. Generate Post files
