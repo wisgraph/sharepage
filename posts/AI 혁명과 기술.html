@@ -4,6 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // Dynamic Base Path for Single Page Application Deep Linking
+    (function () {
+      const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+      if (!isLocal) {
+        // On GitHub Pages, detecting the repository name from the path
+        const parts = window.location.pathname.split('/');
+        // parts[1] is usually the repo name (e.g., "sharepage")
+        if (parts[1] && !['index.html', '404.html', 'posts'].includes(parts[1])) {
+          document.write('<base href="/' + parts[1] + '/">');
+        } else {
+          document.write('<base href="/">');
+        }
+      } else {
+        document.write('<base href="/">');
+      }
+    })();
+  </script>
   <title>AI 혁명과 기술 - SharePage</title>
   <meta name="description" content="AI 시장은 소수의 '신(God) 모델'과 다수의 '작은 모델'로 양분될 것이며, 가격 하락(Tokens by the drink)이 폭발적인 수요를 견인할 것이다.">
 
