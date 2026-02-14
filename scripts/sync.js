@@ -1,12 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 
+// Constants
 const ROOT_DIR = path.join(__dirname, '..');
 const TEMPLATE_PATH = path.join(ROOT_DIR, 'src', 'index.html');
 const NOTES_DIR = path.join(ROOT_DIR, 'notes');
 const POSTS_DIR = path.join(ROOT_DIR, 'posts');
-const IMAGES_DIR = path.join(ROOT_DIR, 'images');
 const DOMAIN = 'https://wis-graph.github.io/sharepage';
+
+// Load Processors
+const processors = {
+    standard: require('./processors/standard'),
+    youtube: require('./processors/youtube')
+};
 
 if (!fs.existsSync(POSTS_DIR)) fs.mkdirSync(POSTS_DIR);
 
@@ -36,117 +42,31 @@ function parseFrontmatter(content) {
 }
 
 /**
- * Clean and normalize text for metadata (description)
- */
-function cleanMetadataText(text) {
-    if (!text) return '';
-    return text
-        .replace(/\*\*(.+?)\*\*/g, '$1')
-        .replace(/\*(.+?)\*/g, '$1')
-        .replace(/__(.+?)__/g, '$1')
-        .replace(/_(.+?)_/g, '$1')
-        .replace(/~~(.+?)~~/g, '$1')
-        .replace(/`(.+?)`/g, '$1')
-        .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-        .replace(/[#*`_\[\]]/g, '')
-        .replace(/\n/g, ' ')
-        .trim();
-}
-
-/**
- * Get description from frontmatter or body
- */
-function extractDescription(data, body) {
-    let description = data.description || data.summary || '';
-    if (!description) {
-        description = cleanMetadataText(body).substring(0, 150) + '...';
-    } else {
-        description = cleanMetadataText(description);
-    }
-    return description;
-}
-
-/**
- * Extract Open Graph image (Thumbnail)
- */
-function extractOgImage(data, body) {
-    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-
-    // 1. Try from Frontmatter
-    let thumbnail = data.thumbnail || data.url || '';
-
-    // Filter out placeholder strings
-    const placeholders = ['(입력된 URL 없음)', '없음', '(없음)', 'n/a', 'none'];
-    if (thumbnail && placeholders.some(p => thumbnail.toLowerCase().includes(p.toLowerCase()))) {
-        thumbnail = '';
-    }
-
-    if (thumbnail) {
-        if (thumbnail.startsWith('[[') && thumbnail.endsWith(']]')) {
-            thumbnail = thumbnail.slice(2, -2);
-        }
-
-        const ytMatch = thumbnail.match(youtubeRegex);
-        if (ytMatch && ytMatch[1]) {
-            return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
-        }
-        if (thumbnail.startsWith('http')) {
-            return thumbnail;
-        }
-        return `images/${thumbnail}`;
-    }
-
-    // 2. Try from Body (Images/Videos)
-    const contentCleaned = body.replace(/```[\s\S]*?```/g, '').replace(/`[^`]*`/g, '');
-    const imageMatch = contentCleaned.match(/!\[\[([^\]]+)\]\]/) || contentCleaned.match(/!\[.*?\]\((.*?)\)/);
-
-    if (imageMatch) {
-        const rawUrl = imageMatch[1];
-        const ytMatch = rawUrl.match(youtubeRegex);
-        if (ytMatch && ytMatch[1]) {
-            return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
-        }
-        return rawUrl.startsWith('http') ? rawUrl : `images/${rawUrl}`;
-    }
-
-    // 3. Fallback for YouTube Source
-    const docType = (data.type || data.source_type || '').toLowerCase();
-    if (docType === 'youtube') {
-        const anyYtMatch = body.match(youtubeRegex);
-        if (anyYtMatch && anyYtMatch[1]) {
-            return `https://img.youtube.com/vi/${anyYtMatch[1]}/maxresdefault.jpg`;
-        }
-    }
-
-    return '';
-}
-
-/**
  * Inject metatags and title into template using placeholders
  */
 function applyMetadataToTemplate(template, metadata) {
-    const { title, description, pageUrl, finalOgImage, isVideo } = metadata;
+    const { title, description, pageUrl, ogImage, ogType } = metadata;
 
     const replacements = {
         '{{TITLE}}': title || 'SharePage',
-        '{{DESCRIPTION}}': description || 'Share your Obsidian notes with the world using SharePage.',
+        '{{DESCRIPTION}}': (description || '').replace(/"/g, '&quot;'),
         '{{PAGE_URL}}': pageUrl || DOMAIN,
-        '{{OG_IMAGE}}': finalOgImage || (DOMAIN + '/images/logo.png'),
-        '{{OG_TYPE}}': isVideo ? 'video.other' : 'website'
+        '{{OG_IMAGE}}': ogImage || (DOMAIN + '/images/logo.png'),
+        '{{OG_TYPE}}': ogType || 'website'
     };
+
+    // Ensure absolute URL for local images
+    if (replacements['{{OG_IMAGE}}'] && !replacements['{{OG_IMAGE}}'].startsWith('http')) {
+        let imgPath = replacements['{{OG_IMAGE}}'];
+        if (imgPath.startsWith('/')) imgPath = imgPath.substring(1);
+        replacements['{{OG_IMAGE}}'] = `${DOMAIN}/${imgPath}`;
+    }
 
     let html = template;
     for (const [placeholder, value] of Object.entries(replacements)) {
         html = html.split(placeholder).join(value);
     }
 
-    return html;
-}
-
-/**
- * Fix relative paths for resources (Removed as <base> tag handles this)
- */
-function fixResourcePaths(html) {
     return html;
 }
 
@@ -158,76 +78,58 @@ function generateStaticHtml(template, mdFilename) {
     const content = fs.readFileSync(fullPath, 'utf8');
     const { data, body } = parseFrontmatter(content);
 
-    const title = data.title || mdFilename.replace(/\.md$/, '');
-    const description = extractDescription(data, body);
-    const ogImage = extractOgImage(data, body);
+    // Select processor based on frontmatter type
+    const docType = (data.type || data.source_type || 'standard').toLowerCase();
+    const processor = processors[docType] || processors.standard;
 
-    // Prepare Absolute URLs for OG
-    const urlSlug = mdFilename.replace(/\.md$/, '');
-    const pageUrl = `${DOMAIN}/posts/${encodeURIComponent(urlSlug)}`;
+    // Process metadata
+    const result = processor.process(data, body, mdFilename);
+    const pageUrl = `${DOMAIN}/posts/${encodeURIComponent(mdFilename.replace(/\.md$/, ''))}`;
 
-    let finalOgImage = '';
-    if (ogImage) {
-        finalOgImage = ogImage.startsWith('http') ? ogImage : ogImage.split('/').map(p => encodeURIComponent(p)).join('/');
-        if (!finalOgImage.startsWith('http')) {
-            if (finalOgImage.startsWith('/')) finalOgImage = finalOgImage.substring(1);
-            finalOgImage = `${DOMAIN}/${finalOgImage}`;
-        }
-    }
-
-    let staticHtml = applyMetadataToTemplate(template, {
-        title,
-        description,
-        pageUrl,
-        finalOgImage,
-        isVideo: ogImage.includes('youtube.com/vi/')
+    // Apply to template
+    const staticHtml = applyMetadataToTemplate(template, {
+        ...result,
+        pageUrl
     });
 
-    staticHtml = fixResourcePaths(staticHtml);
-
     const fileName = mdFilename.replace(/\.md$/, '.html');
-    const RESERVED = ['file_index.html'];
-    if (RESERVED.includes(fileName)) return;
-
     fs.writeFileSync(path.join(POSTS_DIR, fileName), staticHtml);
-    console.log(`[Sync] Generated: posts/${fileName}`);
+    console.log(`[Sync] Generated (${docType}): posts/${fileName}`);
 }
 
 /**
  * Main Sync Logic
  */
 function sync() {
-    console.log('[Sync] Starting pre-rendering (Structured Mode)...');
+    console.log('[Sync] Starting pre-rendering (Modular Mode)...');
 
     if (!fs.existsSync(TEMPLATE_PATH) || !fs.existsSync(NOTES_DIR)) {
         console.error('[Sync] Error: Essential files or directories missing');
         return;
     }
 
-    // 1. Generate new version string (Cache Busting)
     const newVersion = `v=${Date.now()}`;
     let template = fs.readFileSync(TEMPLATE_PATH, 'utf8');
 
-    // 2. Update version and fill Dashboard defaults (Point 4 of Audit)
+    // 1. Update version in template
     template = template.replace(/\?v=[^\s"']+/g, `?${newVersion}`);
+
+    // 2. Generate root index.html with Dashboard defaults
     const dashboardHtml = applyMetadataToTemplate(template, {
         title: 'Dashboard',
         description: 'Share your Obsidian notes with the world using SharePage.',
         pageUrl: DOMAIN,
-        finalOgImage: DOMAIN + '/images/logo.png',
-        isVideo: false
+        ogImage: DOMAIN + '/images/logo.png',
+        ogType: 'website'
     });
+    fs.writeFileSync(path.join(ROOT_DIR, 'index.html'), dashboardHtml);
+    console.log(`[Sync] Updated root index.html`);
 
-    const pathIndex = path.join(ROOT_DIR, 'index.html');
-    fs.writeFileSync(pathIndex, dashboardHtml);
-    console.log(`[Sync] Updated root index.html with version and dashboard metadata`);
+    // 3. Generate 404.html
+    fs.writeFileSync(path.join(ROOT_DIR, '404.html'), dashboardHtml);
+    console.log(`[Sync] Synchronized 404.html`);
 
-    // 3. Generate 404.html from updated dashboardHtml (Point 1 of Audit)
-    const path404 = path.join(ROOT_DIR, '404.html');
-    fs.writeFileSync(path404, dashboardHtml);
-    console.log(`[Sync] Synchronized 404.html from index.html`);
-
-    // 4. Generate Post files
+    // 4. Generate post files
     const files = fs.readdirSync(NOTES_DIR);
     const mdFiles = files.filter(f => f.endsWith('.md') && !f.startsWith('_'));
 
@@ -237,7 +139,7 @@ function sync() {
 
     const indexData = JSON.stringify(mdFiles, null, 2);
     fs.writeFileSync(path.join(POSTS_DIR, 'file_index.json'), indexData);
-    console.log(`[Sync] Completed. Generated ${mdFiles.length} HTML files.`);
+    console.log(`[Sync] Completed. ${mdFiles.length} files processed with modular processors.`);
 }
 
 sync();
