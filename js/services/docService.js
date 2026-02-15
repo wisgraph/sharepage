@@ -3,8 +3,13 @@
  * Handles the transformation from Markdown to HTML
  */
 
-import { parseFrontmatter, transformObsidianImageLinks, transformInternalLinks, slugify } from './markdownService.js?v=1771151265371';
-import { getRawUrl } from './pathService.js?v=1771151265371';
+<<<<<<< HEAD
+import { parseFrontmatter, transformObsidianImageLinks, transformInternalLinks, slugify } from './markdownService.js?v=1771151279067';
+import { getRawUrl } from './pathService.js?v=1771151279067';
+=======
+import { parseFrontmatter, transformObsidianImageLinks, transformInternalLinks, slugify } from './markdownService.js?v=1771151279067';
+import { getRawUrl } from './pathService.js?v=1771151279067';
+>>>>>>> a21b6251ca0f7d8a48dfcc5ef7a112cc6774e9a5
 import {
     applySyntaxHighlighting,
     renderMermaidDiagrams,
@@ -12,9 +17,15 @@ import {
     restoreMath,
     normalizeMermaidAliases,
     transformYouTubeLinks
-} from './renderService.js?v=1771151265371';
-import { transformCallouts } from './calloutService.js?v=1771151265371';
-import { addHeadingIds } from './tocService.js?v=1771151265371';
+<<<<<<< HEAD
+} from './renderService.js?v=1771151279067';
+import { transformCallouts } from './calloutService.js?v=1771151279067';
+import { addHeadingIds } from './tocService.js?v=1771151279067';
+=======
+} from './renderService.js?v=1771151279067';
+import { transformCallouts } from './calloutService.js?v=1771151279067';
+import { addHeadingIds } from './tocService.js?v=1771151279067';
+>>>>>>> a21b6251ca0f7d8a48dfcc5ef7a112cc6774e9a5
 
 /**
  * Core processing pipeline: Markdown -> HTML

@@ -10,11 +10,19 @@ import {
     getActiveTags,
     addActiveTag,
     removeActiveTag
-} from '../state/appState.js?v=1771151265371';
-import { filterSections } from '../services/dashboardService.js?v=1771151265371';
-import { renderSectionedDashboard } from '../views/dashboardCardView.js?v=1771151265371';
-import { renderFullDashboard, updateDashboardResults } from '../views/dashboardView.js?v=1771151265371';
-import { initDashboardAnimations } from '../views/animations.js?v=1771151265371';
+<<<<<<< HEAD
+} from '../state/appState.js?v=1771151279067';
+import { filterSections } from '../services/dashboardService.js?v=1771151279067';
+import { renderSectionedDashboard } from '../views/dashboardCardView.js?v=1771151279067';
+import { renderFullDashboard, updateDashboardResults } from '../views/dashboardView.js?v=1771151279067';
+import { initDashboardAnimations } from '../views/animations.js?v=1771151279067';
+=======
+} from '../state/appState.js?v=1771151279067';
+import { filterSections } from '../services/dashboardService.js?v=1771151279067';
+import { renderSectionedDashboard } from '../views/dashboardCardView.js?v=1771151279067';
+import { renderFullDashboard, updateDashboardResults } from '../views/dashboardView.js?v=1771151279067';
+import { initDashboardAnimations } from '../views/animations.js?v=1771151279067';
+>>>>>>> a21b6251ca0f7d8a48dfcc5ef7a112cc6774e9a5
 
 /**
  * Global Event Handlers for Dashboard
