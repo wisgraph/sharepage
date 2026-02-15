@@ -3,9 +3,9 @@
  * Handles extracting and processing data for the dashboard
  */
 
-import { fetchFile } from '../core/fileApi.js?v=1771151819519';
-import { getNotePath, getRawUrl } from './pathService.js?v=1771151819519';
-import { parseFrontmatter, cleanPlainText } from './markdownService.js?v=1771151819519';
+import { fetchFile } from '../core/fileApi.js?v=1771151904200';
+import { getNotePath, getRawUrl } from './pathService.js?v=1771151904200';
+import { parseFrontmatter, cleanPlainText } from './markdownService.js?v=1771151904200';
 
 /**
  * Extracts links grouped by sections based on ## Headings
@@ -127,7 +127,13 @@ function extractThumbnail(content, metadata) {
  * Enriches a link with metadata and thumbnail
  */
 export async function extractNoteFromLink(link, sortOrder = []) {
-    const linkName = typeof link === 'object' ? link.name : link;
+    const linkName = (typeof link === 'object' && link !== null) ? link.name : link;
+
+    if (!linkName || typeof linkName !== 'string') {
+        console.warn('[DashboardDataService] Invalid link ignored:', link);
+        return null;
+    }
+
     const filename = linkName.endsWith('.md') ? linkName : linkName + '.md';
     const note = {
         file: filename,
