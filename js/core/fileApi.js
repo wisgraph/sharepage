@@ -15,15 +15,15 @@ const fileCache = new Map();
 export async function fetchFile(filename) {
     // Check cache first
     if (fileCache.has(filename)) {
-        console.log(`[FileAPI] Cache hit: ${filename}`);
+        // console.log(`[FileAPI] Cache hit: ${filename}`);
         return fileCache.get(filename);
     }
 
-    console.log(`[FileAPI] Fetching: ${filename}`);
+    // console.log(`[FileAPI] Fetching: ${filename}`);
 
     // Use getRawUrl to resolve the full path
     const url = getRawUrl(filename);
-    console.log(`[FileAPI] Resolved URL: ${url}`);
+    // console.log(`[FileAPI] Resolved URL: ${url}`);
 
     try {
         const response = await fetch(url, { cache: 'no-cache' });
@@ -50,7 +50,7 @@ export async function fetchFile(filename) {
  */
 export function prefetchFile(filename) {
     if (!fileCache.has(filename)) {
-        console.log(`[FileAPI] Prefetching: ${filename}`);
+        // console.log(`[FileAPI] Prefetching: ${filename}`);
         fetchFile(filename).catch(err => {
             console.warn(`[FileAPI] Prefetch failed for ${filename}:`, err);
         });
