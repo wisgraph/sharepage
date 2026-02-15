@@ -93,7 +93,8 @@ function generateStaticHtml(template, mdFilename) {
 
     // Process metadata
     const result = processor.process(data, body, mdFilename);
-    const cleanName = encodeURIComponent(mdFilename.replace(/\.md$/, ''));
+    const normalizedName = mdFilename.replace(/\.md$/, '').normalize('NFC');
+    const cleanName = encodeURIComponent(normalizedName);
     const pageUrl = `${DOMAIN}/posts/${cleanName}/`;
 
     // Apply to template
@@ -102,11 +103,11 @@ function generateStaticHtml(template, mdFilename) {
         pageUrl
     });
 
-    const dirPath = path.join(POSTS_DIR, mdFilename.replace(/\.md$/, ''));
+    const dirPath = path.join(POSTS_DIR, normalizedName);
     if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
     fs.writeFileSync(path.join(dirPath, 'index.html'), staticHtml);
-    console.log(`[Sync] Generated (${docType}): posts/${mdFilename.replace(/\.md$/, '')}/index.html`);
+    console.log(`[Sync] Generated (${docType}): posts/${normalizedName}/index.html`);
 }
 
 /**
