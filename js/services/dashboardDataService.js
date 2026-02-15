@@ -29,15 +29,23 @@ export function extractSectionedLinks(dashboardContent) {
             return;
         }
 
-        const linkMatch = trimmedLine.match(/\[\[([^\]]+)\]\]/);
+        const linkMatch = trimmedLine.match(/\[\[([^\]]+)\]\](?:\s*(.+))?/);
         if (linkMatch) {
             let linkText = linkMatch[1];
+            const extraInfo = linkMatch[2] ? linkMatch[2].trim() : null;
+
             if (linkText.includes('|')) {
                 linkText = linkText.split('|')[0];
             }
             const cleanLink = linkText.replace(/\.md$/, '').trim();
-            if (!currentSection.links.includes(cleanLink)) {
-                currentSection.links.push(cleanLink);
+
+            // Check if already exists to avoid duplicates, but update with extraInfo if found
+            const existing = currentSection.links.find(l => l.name === cleanLink);
+            if (!existing) {
+                currentSection.links.push({
+                    name: cleanLink,
+                    date: extraInfo // This can be a date string like 2024-02-15
+                });
             }
         }
     });
@@ -133,11 +141,14 @@ export async function extractNoteFromLink(link, sortOrder = []) {
 
         // Try to get a sortable date
         let sortDate = 0;
-        if (data.date) {
+        const manualDate = typeof link === 'object' ? link.date : null;
+
+        if (manualDate) {
+            sortDate = new Date(manualDate).getTime();
+        } else if (data.date) {
             sortDate = new Date(data.date).getTime();
         } else if (sortOrder.indexOf(filename) !== -1) {
-            // Use the index in the file_index as a backup (it's already sorted by mtime in sync.js)
-            // Smaller index means newer, so we invert it
+            // Use the index in the file_index as a backup
             sortDate = sortOrder.length - sortOrder.indexOf(filename);
         }
 
@@ -171,7 +182,8 @@ export async function loadSectionedDashboard(dashboardContent) {
             allFiles = await response.json();
         }
     } catch (e) {
-        console.warn('[DashboardDataService] Could not fetch file_index.json');
+        // Silent fail; file_index.json is optional for auxiliary features
+        allFiles = [];
     }
 
     const structuredLinks = extractSectionedLinks(dashboardContent);
@@ -180,7 +192,10 @@ export async function loadSectionedDashboard(dashboardContent) {
 
     // 2. Load structured sections
     for (const section of structuredLinks) {
-        const notePromises = section.links.map(link => extractNoteFromLink(link, allFiles));
+        const notePromises = section.links.map(linkInfo => {
+            const linkName = typeof linkInfo === 'object' ? linkInfo.name : linkInfo;
+            return extractNoteFromLink(linkInfo, allFiles);
+        });
         const notes = await Promise.all(notePromises);
         let validNotes = notes.filter(n => n !== null);
 

@@ -25,10 +25,12 @@ export async function handleDocumentRoute(filename) {
     console.log('[DocController] Loading document:', filename);
 
     try {
-        const rawContent = await fetchFile(filename);
+        // Normalize filename to NFC for consistent fetching (important for Korean on different OS)
+        const normalizedFilename = filename.normalize('NFC');
+        const rawContent = await fetchFile(normalizedFilename);
 
         // Process content (Service Layer)
-        const processedDoc = await processDocument(filename, rawContent);
+        const processedDoc = await processDocument(normalizedFilename, rawContent);
 
         // Render View (View Layer)
         renderDocumentView(
