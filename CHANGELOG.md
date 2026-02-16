@@ -1,6 +1,24 @@
 # Changelog
 
-## [1.1.8] - 2026-02-17
+## [1.1.9] - 2026-02-17
+### Added
+- **Global Toast Notification System**: Replaced localized tooltips with a premium, top-centered notification system.
+  - **Thematic Integration**: Automatically adapts colors based on light/dark mode with glassmorphism (blur) effects.
+  - **Sharp Design**: Matches the project's aesthetic with zero border-radius and high-contrast borders.
+  - **Top-Down UX**: Positioned near the navbar to minimize eye movement after interaction.
+- **Refined Share UX**: 
+  - Added smooth rotations and micro-scale animations to the Share button.
+  - Enhanced visual feedback with success (✅) and error (❌) states in toasts.
+
+### Improved
+- **Deployment Robustness**: Updated `npm run deploy` to use a "local-first" (`-X ours`) merge strategy.
+  - Prevents "git push rejected" errors caused by GitHub Actions' automatic index updates.
+  - Ensures local source-of-truth is always preserved while integrating remote changes.
+
+### Fixed
+- **Local Development Environment**: Updated `index.html` to use relative paths for CSS/JS assets during local testing, ensuring real-time changes are visible without deployment.
+
+[1.1.8] - 2026-02-17
 ### Added
 - **Share Link Feature**: Added a "Share" button to the navbar that copies the current page's URL to the clipboard.
   - Automatically **decodes Korean characters** (unencoded) in the URL for better readability when sharing.
