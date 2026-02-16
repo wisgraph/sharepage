@@ -83,22 +83,52 @@ function applyMetadataToTemplate(template, metadata, domain) {
 /**
  * Update Dashboard Content (Add/Remove links)
  */
-function updateDashboardContent(dashboardContent, noteName, dateStr, isNew = true) {
+function updateDashboardContent(dashboardContent, noteName, dateStr, isNew = true, targetSection = 'Inbox') {
     let currentLines = dashboardContent.split('\n');
     const cleanNoteName = normalizeName(noteName.replace(/\.md$/, ''));
 
-    // Check if link already exists
-    const linkRegex = new RegExp(`\\[\\[${cleanNoteName}(\\|[^\\]]*)?\\]\\]`);
-    const exists = currentLines.some(line => linkRegex.test(line));
+    // 1. Find if and where the link exists
+    const linkRegex = new RegExp(`^\\s*-\\s*\\[\\[${cleanNoteName}(\\|[^\\]]*)?\\]\\]`);
+    let existingLineIdx = -1;
+    let currentSection = '';
 
-    if (isNew && !exists) {
-        const newLinkLine = `- [[${cleanNoteName}]] ${dateStr}`;
-        const inboxIdx = currentLines.findIndex(line => line.trim() === '## Inbox');
+    for (let i = 0; i < currentLines.length; i++) {
+        const line = currentLines[i].trim();
+        if (line.startsWith('## ')) {
+            currentSection = line.substring(3).trim();
+        }
+        if (linkRegex.test(line)) {
+            existingLineIdx = i;
+            break;
+        }
+    }
 
-        if (inboxIdx !== -1) {
-            currentLines.splice(inboxIdx + 1, 0, newLinkLine);
-        } else {
-            currentLines.push('', '## Inbox', newLinkLine);
+    const isCorrectSection = currentSection === targetSection;
+
+    // 2. Logic: Move if in wrong section, or Add if new
+    if (isNew) {
+        if (existingLineIdx !== -1 && !isCorrectSection) {
+            // MOVEMENT: Remove from wrong section
+            console.log(`[Core] Moving [[${cleanNoteName}]] from ${currentSection} to ${targetSection}`);
+            currentLines.splice(existingLineIdx, 1);
+            // Need to re-find or fallback for adding
+            return updateDashboardContent(currentLines.join('\n'), noteName, dateStr, true, targetSection);
+        } else if (existingLineIdx === -1) {
+            // NEW: Add to target section
+            const newLinkLine = `- [[${cleanNoteName}]] ${dateStr}`;
+            const sectionHeader = `## ${targetSection}`;
+            let sectionIdx = currentLines.findIndex(line => line.trim() === sectionHeader);
+
+            // Fallback to Inbox if target section not found
+            if (sectionIdx === -1 && targetSection !== 'Inbox') {
+                sectionIdx = currentLines.findIndex(line => line.trim() === '## Inbox');
+            }
+
+            if (sectionIdx !== -1) {
+                currentLines.splice(sectionIdx + 1, 0, newLinkLine);
+            } else {
+                currentLines.push('', `## ${targetSection}`, newLinkLine);
+            }
         }
     }
 

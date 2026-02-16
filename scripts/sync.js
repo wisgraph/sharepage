@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const core = require('./core-logic');
+const classifier = require('./classifier');
 
 // Constants
 const ROOT_DIR = path.join(__dirname, '..');
@@ -140,7 +141,14 @@ function sync() {
         const today = new Date().toISOString().split('T')[0];
 
         mdFiles.forEach(name => {
-            updatedContent = core.updateDashboardContent(updatedContent, name, today, true);
+            const fullPath = path.join(NOTES_DIR, name);
+            const content = fs.readFileSync(fullPath, 'utf8');
+            const { data } = core.parseFrontmatter(content);
+
+            // Use the classification engine
+            const targetSection = classifier.classify(data);
+
+            updatedContent = core.updateDashboardContent(updatedContent, name, today, true, targetSection);
         });
 
         // Final sanity check for removed files

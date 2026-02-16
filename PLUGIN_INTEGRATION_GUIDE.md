@@ -34,9 +34,15 @@ The plugin must mirror the logic in `scripts/core-logic.js` to ensure total cons
     *   Replace placeholders: `{{TITLE}}`, `{{DESCRIPTION}}`, `{{PAGE_URL}}`, `{{OG_IMAGE}}`, `{{DOMAIN}}`.
     *   **Rule**: Use absolute URLs for all assets. Format: `${DOMAIN}/posts/${normalizedName}.html`.
 
-4.  **Dashboard Synchronizer**:
+4.  **Classifier Engine**:
+    *   Refer to `scripts/classifier.js` to determine which Dashboard section a note belongs to.
+    *   **Logic**: Check for `type` or `source_type` in metadata.
+    *   **Mapping**: If the type is `youtube`, the target section is `## YouTube`. Otherwise, defaults to `## Inbox`.
+
+5.  **Dashboard Synchronizer**:
     *   Fetch `notes/_dashboard.md`.
-    *   Inject `- [[NoteName]] YYYY-MM-DD` under the `## Inbox` section if not present.
+    *   Use the **Classifier Engine** to find the correct heading (e.g., `## YouTube` or `## Inbox`).
+    *   Inject `- [[NoteName]] YYYY-MM-DD` under that specific section.
     *   Do not replace the whole file; perform surgical insertion.
 
 ---
