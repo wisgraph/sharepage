@@ -7,6 +7,7 @@
     "build:css:watch": "onchange 'css/*.css' -- npm run build:css",
     "dev": "npm run build:css:watch",
     "sync": "node scripts/sync.js",
+    "rebuild": "node scripts/rebuild-all.js",
     "deploy": "npm run sync && git add . && git commit -m 'chore: deploy updates' && git push origin main"
   },
   "keywords": [

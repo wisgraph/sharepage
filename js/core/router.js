@@ -3,40 +3,46 @@
  * Core routing logic only. Delegates to controllers for specific routes.
  */
 
-import { BASE_PATH } from './config.js?v=1771233685290';
-import { parseNotePath } from '../services/pathService.js?v=1771233685290';
-import { handleDashboardRoute, handleDocumentRoute } from '../controllers/docController.js?v=1771233685290';
+import { BASE_PATH } from './config.js?v=1771234922290';
+import { parseNotePath } from '../services/pathService.js?v=1771234922290';
+import { handleDashboardRoute, handleDocumentRoute } from '../controllers/docController.js?v=1771234922290';
 
 /**
  * Main navigation entry point
  * @param {string} rawPath - The URL path (e.g. /sharepage/posts/My-Note)
  */
 export async function navigate(rawPath) {
-  console.log('[Router] Navigating to:', rawPath, '(Base:', BASE_PATH, ')');
+  console.log('[Router] Navigating to:', rawPath);
 
-  // 1. Detect and fix malformed paths with duplicate BASE_PATH
+  // 1. Detect and fix malformed paths
   if (BASE_PATH && rawPath.includes(BASE_PATH + BASE_PATH)) {
     const correctPath = rawPath.replace(BASE_PATH + BASE_PATH, BASE_PATH);
-    console.warn(`[Router] Malformed path detected: ${rawPath}, redirecting to ${correctPath}`);
     history.replaceState(null, '', correctPath);
     return navigate(correctPath);
   }
 
-  // 2. Normalize path
-  const normalizedPath = normalizePath(rawPath);
+  // 2. Extract hash for later usage
+  const hashIdx = rawPath.indexOf('#');
+  const hash = hashIdx !== -1 ? rawPath.slice(hashIdx) : '';
+  const pathWithoutHash = hashIdx !== -1 ? rawPath.slice(0, hashIdx) : rawPath;
 
-  // 3. Routing logic
+  // 3. Normalize path and route
+  const normalizedPath = normalizePath(pathWithoutHash);
+
   if (normalizedPath === '' || normalizedPath === '/') {
     await handleDashboardRoute();
   } else {
-    // Use centralized path parser
     const noteName = parseNotePath(normalizedPath);
-
     if (noteName) {
       await handleDocumentRoute(noteName);
     } else {
       await handleLegacyRedirect(normalizedPath);
     }
+  }
+
+  // 4. Scroll to hash if present after content is rendered
+  if (hash) {
+    setTimeout(() => scrollToElement(hash.slice(1)), 100);
   }
 }
 
@@ -49,20 +55,23 @@ function normalizePath(rawPath) {
     path = path.slice(BASE_PATH.length);
   }
 
-  // Ensure path starts with /
   if (!path.startsWith('/')) path = '/' + path;
-
-  // Strip trailing slashes
-  if (path.length > 1 && path.endsWith('/')) {
-    path = path.slice(0, -1);
-  }
-
-  // Strip .html extension
-  if (path.endsWith('.html')) {
-    path = path.slice(0, -5);
-  }
+  if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+  if (path.endsWith('.html')) path = path.slice(0, -5);
 
   return path;
+}
+
+/**
+ * Scrolls to an element by ID with sticky header offset
+ */
+function scrollToElement(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    const yOffset = -85; // Account for fixed header
+    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
 }
 
 /**
@@ -102,21 +111,22 @@ export function initRouter() {
 
       e.preventDefault();
 
-      let path = url.pathname;
+      // Preserve path, search AND hash
+      const fullPath = url.pathname + url.search + url.hash;
 
-      // Ensure path includes BASE_PATH if we are navigating internally
-      if (BASE_PATH && !path.startsWith(BASE_PATH)) {
-        path = BASE_PATH + (path.startsWith('/') ? '' : '/') + path;
-      }
+      if (window.location.pathname + window.location.search + window.location.hash === fullPath) return;
 
-      if (window.location.pathname === path) return;
-
-      history.pushState(null, '', path);
+      history.pushState(null, '', fullPath);
 
       if (document.startViewTransition) {
-        document.startViewTransition(() => navigate(path));
+        document.startViewTransition(() => navigate(fullPath));
       } else {
-        navigate(path);
+        navigate(fullPath);
+      }
+
+      // If no hash, scroll to top
+      if (!url.hash) {
+        window.scrollTo(0, 0);
       }
     }
     // Handle old hash links for backward compatibility

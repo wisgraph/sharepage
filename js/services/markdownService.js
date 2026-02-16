@@ -19,38 +19,38 @@ export function slugify(text) {
 
 /**
  * Transform Obsidian internal links [[...]] to HTML anchors
+ * Robustly handles: [[Note]], [[Note|Alias]], [[#Heading]], [[Note#Heading|Alias]]
  */
 export function transformInternalLinks(html) {
     return html.replace(
         /\[\[(.*?)\]\]/g,
         (match, content) => {
-            // content could be "Page Name" or "Page Name|Alias" or "#Heading" or "Page#Heading"
-            const parts = content.split('|');
-            const linkTarget = parts[0];
-            const linkAlias = parts[1]; // undefined if no alias
+            const [rawTarget, linkAlias] = content.split('|');
+            const linkTarget = rawTarget.trim();
 
-            // Check for anchor link
+            // Case 1: Same-page Heading link [[#Heading Name]]
             if (linkTarget.startsWith('#')) {
-                // Current page anchor: [[#Heading]]
-                const heading = linkTarget.substring(1);
-                const sluggified = slugify(heading);
-                const text = linkAlias || heading;
+                const headingName = linkTarget.substring(1);
+                const sluggified = slugify(headingName);
+                const text = linkAlias || headingName;
                 return `<a href="#${sluggified}" class="internal-link anchor-link">${text}</a>`;
-            } else if (linkTarget.includes('#')) {
-                // Specific page anchor: [[Page#Heading]]
-                const [page, heading] = linkTarget.split('#');
-                const sluggifiedHeading = slugify(heading);
-                const noteName = page.replace(/\.md$/, '');
-                const path = getNotePath(noteName);
-                const text = linkAlias || (page + ' > ' + heading);
-                return `<a href="${path}#${sluggifiedHeading}" class="internal-link">${text}</a>`;
-            } else {
-                // Normal page link
-                const noteName = linkTarget.replace(/\.md$/, '');
-                const path = getNotePath(noteName);
-                const text = linkAlias || noteName;
-                return `<a href="${path}" class="internal-link">${text}</a>`;
             }
+
+            // Case 2: Cross-page Heading link [[Note Name#Heading Name]]
+            if (linkTarget.includes('#')) {
+                const [noteName, headingName] = linkTarget.split('#');
+                const sluggifiedHeading = slugify(headingName);
+                const cleanNoteName = noteName.replace(/\.md$/, '').trim();
+                const path = getNotePath(cleanNoteName);
+                const text = linkAlias || (cleanNoteName + ' > ' + headingName);
+                return `<a href="${path}#${sluggifiedHeading}" class="internal-link">${text}</a>`;
+            }
+
+            // Case 3: Standard Page link [[Note Name]]
+            const cleanNoteName = linkTarget.replace(/\.md$/, '').trim();
+            const path = getNotePath(cleanNoteName);
+            const text = linkAlias || cleanNoteName;
+            return `<a href="${path}" class="internal-link">${text}</a>`;
         }
     );
 }
