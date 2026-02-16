@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.7] - 2026-02-16
+### Added
+- **Internal Link Infrastructure**: Robust handling of Obsidian same-page heading links (`[[#Heading]]`) and cross-page heading links (`[[Note#Heading]]`).
+  - Implemented smooth scrolling with fixed header offset (-85px) for anchor navigation.
+- **Custom CSS Support**: Users can now override any system style by editing `css/custom.css`.
+  - Added `CUSTOM_STYLE_GUIDE.md` (EN/KR) for users and developers.
+- **Hybrid Rendering Strategy**: Formalized "Hybrid Render" workflow for Obsidian plugins (Pre-render local HTML -> Atomic Push -> Indexing).
+- **Korean Localization**: Added `PLUGIN_INTEGRATION_GUIDE_KR.md` for Korean plugin developers.
+
+### Fixed
+- **State Persistence**: Fixed a critical issue where `file_index.json` updates and orphan cleanups were not being pushed back to the repository from GitHub Actions.
+- **Orphan Cleanup**: Enhanced the sync script to automatically detect and remove legacy folder structures (`posts/Note/index.html`) to maintain a clean file-based architecture.
+- **Navigation**: Preserved URL hashes during client-side routing transitions.
+
 ## [1.1.6] - 2026-02-15
 ### Added
 - **Plugin Infrastructure**: Added `scripts/core-logic.js` for standalone logic reuse in Obsidian plugins without requiring full repository clones.
