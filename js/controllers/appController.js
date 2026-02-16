@@ -3,10 +3,10 @@
  * Main entry point for application initialization
  */
 
-import { initRouter, navigate } from '../core/router.js?v=1771252896822';
-import { BASE_PATH } from '../core/config.js?v=1771252896822';
-import { initTOCToggle } from '../views/tocView.js?v=1771252896822';
-import { initTheme, toggleTheme } from './themeController.js?v=1771252896822';
+import { initRouter, navigate } from '../core/router.js?v=1771252927293';
+import { BASE_PATH } from '../core/config.js?v=1771252927293';
+import { initTOCToggle } from '../views/tocView.js?v=1771252927293';
+import { initTheme, toggleTheme } from './themeController.js?v=1771252927293';
 
 /**
  * Initializes the entire application
