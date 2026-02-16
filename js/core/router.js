@@ -3,9 +3,9 @@
  * Core routing logic only. Delegates to controllers for specific routes.
  */
 
-import { BASE_PATH } from './config.js?v=1771234922290';
-import { parseNotePath } from '../services/pathService.js?v=1771234922290';
-import { handleDashboardRoute, handleDocumentRoute } from '../controllers/docController.js?v=1771234922290';
+import { BASE_PATH } from './config.js?v=1771235240472';
+import { parseNotePath } from '../services/pathService.js?v=1771235240472';
+import { handleDashboardRoute, handleDocumentRoute } from '../controllers/docController.js?v=1771235240472';
 
 /**
  * Main navigation entry point
@@ -102,18 +102,24 @@ export function initRouter() {
     const href = link.getAttribute('href');
     if (!href) return;
 
-    // Handle internal path links (starting with / or same origin)
-    if (href.startsWith('/') || href.startsWith(window.location.origin)) {
+    // Handle internal path links (starting with /, # or same origin)
+    if (href.startsWith('/') || href.startsWith('#') || href.startsWith(window.location.origin)) {
       const url = new URL(href, window.location.origin);
 
-      // Don't intercept if it's an external link or has a different origin
+      // Don't intercept if it's an external link
       if (url.origin !== window.location.origin) return;
 
       e.preventDefault();
 
-      // Preserve path, search AND hash
-      const fullPath = url.pathname + url.search + url.hash;
+      // Case 1: Same-page anchor link (#heading)
+      if (href.startsWith('#')) {
+        scrollToElement(href.slice(1));
+        history.pushState(null, '', window.location.pathname + window.location.search + href);
+        return;
+      }
 
+      // Case 2: Standard or cross-page heading link
+      const fullPath = url.pathname + url.search + url.hash;
       if (window.location.pathname + window.location.search + window.location.hash === fullPath) return;
 
       history.pushState(null, '', fullPath);
@@ -124,7 +130,6 @@ export function initRouter() {
         navigate(fullPath);
       }
 
-      // If no hash, scroll to top
       if (!url.hash) {
         window.scrollTo(0, 0);
       }

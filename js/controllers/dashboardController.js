@@ -10,11 +10,11 @@ import {
     getActiveTags,
     addActiveTag,
     removeActiveTag
-} from '../state/appState.js?v=1771234922290';
-import { filterSections } from '../services/dashboardService.js?v=1771234922290';
-import { renderSectionedDashboard } from '../views/dashboardCardView.js?v=1771234922290';
-import { renderFullDashboard, updateDashboardResults } from '../views/dashboardView.js?v=1771234922290';
-import { initDashboardAnimations } from '../views/animations.js?v=1771234922290';
+} from '../state/appState.js?v=1771235240472';
+import { filterSections } from '../services/dashboardService.js?v=1771235240472';
+import { renderSectionedDashboard } from '../views/dashboardCardView.js?v=1771235240472';
+import { renderFullDashboard, updateDashboardResults } from '../views/dashboardView.js?v=1771235240472';
+import { initDashboardAnimations } from '../views/animations.js?v=1771235240472';
 
 /**
  * Global Event Handlers for Dashboard
