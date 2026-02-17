@@ -59,50 +59,63 @@ export function transformCallouts(markdown) {
     const output = [];
     let insideCallout = false;
     let currentCallout = null;
+    let calloutIndent = '';
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        const match = line.match(/^>\s*\[!(\w+)\](.*)/);
+        // Match: optional whitespace (indent), then '>', then optional whitespace, then '[!type]', then title
+        const match = line.match(/^(\s*)>\s*\[!(\w+)\](.*)/);
 
         if (match) {
             if (insideCallout) {
-                output.push(renderCallout(currentCallout));
+                output.push(renderCallout(currentCallout, calloutIndent));
             }
 
-            const type = match[1].toLowerCase();
-            const title = match[2].trim() || type.charAt(0).toUpperCase() + type.slice(1);
+            const indent = match[1];
+            const type = match[2].toLowerCase();
+            const title = match[3].trim() || type.charAt(0).toUpperCase() + type.slice(1);
 
             insideCallout = true;
+            calloutIndent = indent;
             currentCallout = {
                 type: CALLOUT_TYPES[type] || 'note',
                 title: title,
                 content: []
             };
-        } else if (insideCallout && line.startsWith('>')) {
-            let contentLine = line.replace(/^>\s?/, '');
-            currentCallout.content.push(contentLine);
-        } else if (insideCallout && line.trim() === '') {
-            const nextLine = lines[i + 1];
-            if (nextLine && nextLine.startsWith('>')) {
-                currentCallout.content.push('');
+        } else if (insideCallout) {
+            // Check if this line is a continuation of the CURRENT callout
+            // It must have the SAME indentation followed by '>'
+            const escapedIndent = calloutIndent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const continuationRegex = new RegExp(`^${escapedIndent}>\s?(.*)`);
+            const contentMatch = line.match(continuationRegex);
+
+            if (contentMatch) {
+                currentCallout.content.push(contentMatch[1]);
+            } else if (line.trim() === '') {
+                // Peek at next line to see if callout continues after empty line
+                const nextLine = lines[i + 1];
+                const nextMatch = nextLine && nextLine.match(continuationRegex);
+                if (nextMatch) {
+                    currentCallout.content.push('');
+                } else {
+                    output.push(renderCallout(currentCallout, calloutIndent));
+                    insideCallout = false;
+                    currentCallout = null;
+                    output.push(line);
+                }
             } else {
-                output.push(renderCallout(currentCallout));
+                output.push(renderCallout(currentCallout, calloutIndent));
                 insideCallout = false;
                 currentCallout = null;
                 output.push(line);
             }
         } else {
-            if (insideCallout) {
-                output.push(renderCallout(currentCallout));
-                insideCallout = false;
-                currentCallout = null;
-            }
             output.push(line);
         }
     }
 
     if (insideCallout) {
-        output.push(renderCallout(currentCallout));
+        output.push(renderCallout(currentCallout, calloutIndent));
     }
 
     return output.join('\n');
@@ -113,7 +126,7 @@ export function transformCallouts(markdown) {
  * @param {Object} callout 
  * @returns {string} HTML string
  */
-function renderCallout(callout) {
+function renderCallout(callout, indent = '') {
     const icon = ICONS[callout.type] || ICONS['note'];
 
     // Use global marked parser for inner content
@@ -121,7 +134,8 @@ function renderCallout(callout) {
         ? marked.parse(callout.content.join('\n'))
         : callout.content.join('\n');
 
-    return `
+    // Prepend indentation to each line of the callout HTML
+    const html = `
 <div class="callout" data-callout="${callout.type}">
   <div class="callout-title">
     <div class="callout-icon">${icon}</div>
@@ -131,5 +145,7 @@ function renderCallout(callout) {
     ${contentHtml}
   </div>
 </div>
-`;
+`.trim();
+
+    return html.split('\n').map(line => indent + line).join('\n');
 }
