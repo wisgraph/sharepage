@@ -3,19 +3,19 @@
  * Coordinates document loading, processing, and rendering
  */
 
-import { fetchFile } from '../core/fileApi.js?v=1771730443640';
-import { processDocument } from '../services/docService.js?v=1771730443640';
-import { renderDocumentView, renderError, renderLoading, prepareLayout } from '../views/docView.js?v=1771730443640';
-import { initImageViewer } from '../views/imageViewer.js?v=1771730443640';
-import { initCodeUtils } from '../views/codeView.js?v=1771730443640';
-import { initLinkPreviews } from '../views/previewView.js?v=1771730443640';
-import { renderTOC, initScrollHighlight } from '../views/tocView.js?v=1771730443640';
-import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations } from '../views/animations.js?v=1771730443640';
-import { loadDashboardNotes } from '../services/dashboardService.js?v=1771730443640';
-import { renderDashboardPage } from '../views/dashboardView.js?v=1771730443640';
-import { initDashboardHandlers } from './dashboardController.js?v=1771730443640';
-import { setRawMarkdown } from '../state/appState.js?v=1771730443640';
-import { updateCopyMarkdownButton } from './appController.js?v=1771730443640';
+import { fetchFile } from '../core/fileApi.js?v=1771730669552';
+import { processDocument } from '../services/docService.js?v=1771730669552';
+import { renderDocumentView, renderError, renderLoading, prepareLayout } from '../views/docView.js?v=1771730669552';
+import { initImageViewer } from '../views/imageViewer.js?v=1771730669552';
+import { initCodeUtils } from '../views/codeView.js?v=1771730669552';
+import { initLinkPreviews } from '../views/previewView.js?v=1771730669552';
+import { renderTOC, initScrollHighlight } from '../views/tocView.js?v=1771730669552';
+import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations } from '../views/animations.js?v=1771730669552';
+import { loadDashboardNotes } from '../services/dashboardService.js?v=1771730669552';
+import { renderDashboardPage } from '../views/dashboardView.js?v=1771730669552';
+import { initDashboardHandlers } from './dashboardController.js?v=1771730669552';
+import { setRawMarkdown } from '../state/appState.js?v=1771730669552';
+import { updateCopyMarkdownButton } from './appController.js?v=1771730669552';
 
 /**
  * Handles individual document route logic
