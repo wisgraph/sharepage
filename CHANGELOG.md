@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0] - 2026-02-22
+### Added
+- **Copy Markdown Button**: Added a button to copy the original markdown source to clipboard.
+  - Located in the navbar (next to Share button) and only visible on document pages.
+  - Uses clipboard icon with the same styling as other navbar buttons.
+  - Shows "Markdown Copied!" toast notification on success.
+
 ## [1.2.0] - 2026-02-17
 ### Fixed
 - **Indented Callouts**: Supported callouts nested within lists or blocks with leading whitespace.

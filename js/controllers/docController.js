@@ -3,17 +3,19 @@
  * Coordinates document loading, processing, and rendering
  */
 
-import { fetchFile } from '../core/fileApi.js?v=1771303380617';
-import { processDocument } from '../services/docService.js?v=1771303380617';
-import { renderDocumentView, renderError, renderLoading, prepareLayout } from '../views/docView.js?v=1771303380617';
-import { initImageViewer } from '../views/imageViewer.js?v=1771303380617';
-import { initCodeUtils } from '../views/codeView.js?v=1771303380617';
-import { initLinkPreviews } from '../views/previewView.js?v=1771303380617';
-import { renderTOC, initScrollHighlight } from '../views/tocView.js?v=1771303380617';
-import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations } from '../views/animations.js?v=1771303380617';
-import { loadDashboardNotes } from '../services/dashboardService.js?v=1771303380617';
-import { renderDashboardPage } from '../views/dashboardView.js?v=1771303380617';
-import { initDashboardHandlers } from './dashboardController.js?v=1771303380617';
+import { fetchFile } from '../core/fileApi.js?v=1771730669552';
+import { processDocument } from '../services/docService.js?v=1771730669552';
+import { renderDocumentView, renderError, renderLoading, prepareLayout } from '../views/docView.js?v=1771730669552';
+import { initImageViewer } from '../views/imageViewer.js?v=1771730669552';
+import { initCodeUtils } from '../views/codeView.js?v=1771730669552';
+import { initLinkPreviews } from '../views/previewView.js?v=1771730669552';
+import { renderTOC, initScrollHighlight } from '../views/tocView.js?v=1771730669552';
+import { initScrollAnimations, cleanupScrollAnimations, initDashboardAnimations } from '../views/animations.js?v=1771730669552';
+import { loadDashboardNotes } from '../services/dashboardService.js?v=1771730669552';
+import { renderDashboardPage } from '../views/dashboardView.js?v=1771730669552';
+import { initDashboardHandlers } from './dashboardController.js?v=1771730669552';
+import { setRawMarkdown } from '../state/appState.js?v=1771730669552';
+import { updateCopyMarkdownButton } from './appController.js?v=1771730669552';
 
 /**
  * Handles individual document route logic
@@ -30,6 +32,8 @@ export async function handleDocumentRoute(filename) {
         const normalizedFilename = filename.normalize('NFC');
         const rawContent = await fetchFile(normalizedFilename);
 
+        setRawMarkdown(rawContent);
+
         // Process content (Service Layer)
         const processedDoc = await processDocument(normalizedFilename, rawContent);
 
@@ -43,6 +47,8 @@ export async function handleDocumentRoute(filename) {
 
         // Post-render initializations
         await initPostRenderScripts();
+        
+        updateCopyMarkdownButton(true);
 
     } catch (error) {
         renderError(filename, error);
@@ -56,6 +62,7 @@ export async function handleDashboardRoute() {
     prepareLayout({ isDashboard: true });
     renderLoading('Loading Dashboard');
     document.title = 'Dashboard - SharePage';
+    setRawMarkdown(null);
     console.log('[DocController] Loading dashboard');
 
     try {
@@ -68,6 +75,7 @@ export async function handleDashboardRoute() {
             window.scrollTo(0, 0);
             initDashboardHandlers();
             initDashboardAnimations();
+            updateCopyMarkdownButton(false);
         }
     } catch (error) {
         renderError('Dashboard', error);
