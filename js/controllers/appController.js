@@ -3,10 +3,11 @@
  * Main entry point for application initialization
  */
 
-import { initRouter, navigate } from '../core/router.js?v=1771303380617';
-import { BASE_PATH } from '../core/config.js?v=1771303380617';
-import { initTOCToggle } from '../views/tocView.js?v=1771303380617';
-import { initTheme, toggleTheme } from './themeController.js?v=1771303380617';
+import { initRouter, navigate } from '../core/router.js?v=1771730443640';
+import { BASE_PATH } from '../core/config.js?v=1771730443640';
+import { initTOCToggle } from '../views/tocView.js?v=1771730443640';
+import { initTheme, toggleTheme } from './themeController.js?v=1771730443640';
+import { getRawMarkdown } from '../state/appState.js?v=1771730443640';
 
 /**
  * Initializes the entire application
@@ -27,6 +28,7 @@ export function initializeApp() {
     initRouter();
     initTOCToggle();
     initShareButton();
+    initCopyMarkdownButton();
 
     // 5. Update UI elements
     updateNavbar();
@@ -54,6 +56,38 @@ function initShareButton() {
         }).catch(err => {
             console.error('Failed to copy URL:', err);
             showToast('Failed to copy link', 'error');
+        });
+    });
+}
+
+export function updateCopyMarkdownButton(isDocument) {
+    const copyMdBtn = document.getElementById('copy-md-btn');
+    if (!copyMdBtn) return;
+    
+    copyMdBtn.style.display = isDocument ? 'flex' : 'none';
+}
+
+function initCopyMarkdownButton() {
+    const copyMdBtn = document.getElementById('copy-md-btn');
+    if (!copyMdBtn) return;
+
+    copyMdBtn.addEventListener('click', () => {
+        const markdown = getRawMarkdown();
+        
+        if (!markdown) {
+            showToast('No markdown to copy', 'error');
+            return;
+        }
+
+        navigator.clipboard.writeText(markdown).then(() => {
+            copyMdBtn.classList.add('copied');
+            showToast('Markdown Copied!', 'success');
+            setTimeout(() => {
+                copyMdBtn.classList.remove('copied');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy markdown:', err);
+            showToast('Failed to copy markdown', 'error');
         });
     });
 }

@@ -17,7 +17,8 @@ const dashboardState = {
 const documentState = {
     currentDocument: null,
     currentPath: null,
-    scrollPosition: 0
+    scrollPosition: 0,
+    rawMarkdown: null
 };
 
 // UI State
@@ -115,6 +116,14 @@ export function setCurrentPath(path) {
 
 export function getCurrentPath() {
     return documentState.currentPath;
+}
+
+export function setRawMarkdown(markdown) {
+    documentState.rawMarkdown = markdown;
+}
+
+export function getRawMarkdown() {
+    return documentState.rawMarkdown;
 }
 
 /**
